@@ -1,0 +1,6 @@
+standard = "1993"
+
+[libraries]
+
+[lint]
+unused = "error"
