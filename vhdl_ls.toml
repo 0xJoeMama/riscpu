@@ -1,6 +1,10 @@
-standard = "1993"
+standard = "2008"
 
 [libraries]
+riscv.file = [
+  "./src/riscv.vhdl",
+  "./src/riscv_driver.vhdl"
+]
 
 [lint]
 unused = "error"
