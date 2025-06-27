@@ -1,9 +1,8 @@
 standard = "2008"
 
 [libraries]
-riscv.file = [
-  "./src/riscv.vhdl",
-  "./src/riscv_driver.vhdl"
+riscv.files = [
+  "./src/*.vhdl"
 ]
 
 [lint]
