@@ -1,26 +1,24 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.types.all;
 
 entity Mem is
-  generic(
-    ADDRESS_BITS : integer := 32;
-    WORDS: integer := 1024
-  );
+  generic(WORDS: integer := 1024);
   port (
   -- TODO: perhaps move away from synchronous ram?
   clk: in std_logic;
   reset: in std_logic;
   read: in std_logic;
   write: in std_logic;
-  addr: in unsigned(ADDRESS_BITS - 1 downto 0);
-  inword: in std_logic_vector(ADDRESS_BITS - 1 downto 0);
-  outword: out std_logic_vector(ADDRESS_BITS - 1 downto 0)
+  addr: in addr_t;
+  inword: in word_t;
+  outword: out word_t
   );
 end entity Mem;
 
 architecture Beh of Mem is
-  type mem_array is array(0 to WORDS - 1) of std_logic_vector(ADDRESS_BITS - 1 downto 0);
+  type mem_array is array(0 to WORDS - 1) of word_t;
   signal cells: mem_array;
 begin
   process (reset) is

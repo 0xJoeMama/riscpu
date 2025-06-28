@@ -1,22 +1,22 @@
 library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
+use work.types.all;
 
 entity RiscV is
-  generic(BITS : integer := 32);
   port(
     clk: in std_logic;
     reset: in std_logic;
-    curr_insn: in std_logic_vector(BITS - 1 downto 0);
-    pc: out unsigned(BITS - 1 downto 0);
-    outword: out std_logic_vector(BITS - 1 downto 0)
+    curr_insn: in word_t;
+    pc: out addr_t;
+    outword: out word_t
   );
 end entity RiscV;
 
 architecture Beh of RiscV is
   -- TODO: initial address is 0 by default
-  constant INITIAL_ADDRESS: unsigned(BITS - 1 downto 0) := resize(x"0", BITS);
-  signal pc_internal: unsigned(BITS - 1 downto 0) := INITIAL_ADDRESS;
+  constant INITIAL_ADDRESS: addr_t := resize(x"0", WORD_SIZE);
+  signal pc_internal: addr_t := INITIAL_ADDRESS;
 begin
   pc_update: process (clk, reset) is
   begin

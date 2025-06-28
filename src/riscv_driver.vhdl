@@ -4,6 +4,7 @@ library std;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
+use work.types.all;
 
 entity RiscVDriver is
 end entity RiscVDriver;
@@ -11,12 +12,12 @@ end entity RiscVDriver;
 architecture Beh of RiscvDriver is
   signal clk : std_logic;
   signal reset: std_logic;
-  signal outword: std_logic_vector(31 downto 0);
-  type initial_insns is array(0 to 127) of std_logic_vector(31 downto 0);
+  signal outword: word_t;
+  type initial_insns is array(0 to 127) of word_t;
   signal insns: initial_insns;
 
-  signal pc: unsigned(31 downto 0) := (others => '0');
-  signal curr_insn : std_logic_vector(31 downto 0) := (others => '0');
+  signal pc: addr_t := (others => '0');
+  signal curr_insn : word_t := (others => '0');
   type insn_file is file of integer;
 begin
   cpu: entity work.RiscV port map (
