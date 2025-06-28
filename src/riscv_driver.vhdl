@@ -13,18 +13,18 @@ architecture Beh of RiscvDriver is
   signal clk : std_logic;
   signal reset: std_logic;
   signal outword: word_t;
-  type initial_insns is array(0 to 127) of word_t;
-  signal insns: initial_insns;
-
-  signal pc: addr_t := (others => '0');
+  signal write_enable : std_logic;
   signal curr_insn : word_t := (others => '0');
+  signal pc : addr_t;
+
   type insn_file is file of integer;
 begin
   cpu: entity work.RiscV port map (
     clk => clk,
-    curr_insn => curr_insn,
     reset => reset,
+    inword => curr_insn,
     outword => outword,
+    write_enable => write_enable,
     pc => pc
   );
 
@@ -35,40 +35,52 @@ begin
     variable outline: line;
   begin
     file_open(infile, "insns.bin", read_mode);
-
-    while not endfile(infile) and j < 128 loop
-      read(infile, insn);
-      insns(j) <= std_logic_vector(to_signed(insn, insns(j)'length));
-      j := j + 1;
-    end loop;
-
-    file_close(infile);
-
+    report "Reset CPU state";
     reset <= '1';
     wait for 10 ns;
-    reset <= '0';
-    wait for 10 ns;
 
+    reset <= '0';
+    write_enable <= '1';
     clk <= '1';
     wait for 10 ns;
+
+    report "Enabled write mode to map instructions to memory";
     clk <= '0';
     wait for 10 ns;
 
-    for i in 0 to 100 loop
-      write(outline, "0x" & to_hstring(unsigned(outword)));
-      writeline(output, outline);
+    while not endfile(infile) and j < 128 loop
+      read(infile, insn);
+      curr_insn <= std_logic_vector(to_signed(insn, curr_insn'length));
+      wait for 10 ns;
       clk <= '1';
       wait for 10 ns;
       clk <= '0';
       wait for 10 ns;
+      j := j + 1;
+    end loop;
+
+    file_close(infile);
+    write_enable <= '0';
+    report "Instructions written, disabling write mode";
+
+    report "Resetting CPU state";
+
+    clk <= '1';
+    reset <= '1';
+    wait for 10 ns;
+    reset <= '0';
+    wait for 10 ns;
+    
+    report "Start execution";
+
+    for i in 0 to 100 loop
+      clk <= '0';
+      wait for 10 ns;
+      write(outline, "0x" & to_hstring(unsigned(outword)));
+      writeline(output, outline);
+      clk <= '1';
+      wait for 10 ns;
     end loop;
     wait;
   end process test;
-
-  process (clk) is
-  begin
-    if falling_edge(clk) then
-      curr_insn <= insns(to_integer(shift_right(pc, 2)));
-    end if;
-  end process;
 end architecture Beh;
