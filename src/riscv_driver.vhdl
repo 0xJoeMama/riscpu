@@ -12,10 +12,10 @@ end entity RiscVDriver;
 architecture Beh of RiscvDriver is
   signal clk : std_logic;
   signal reset: std_logic;
-  signal outword: word_t;
   signal write_enable : std_logic;
   signal curr_insn : word_t := (others => '0');
-  signal pc : addr_t;
+
+  signal state: cpu_state_t;
 
   type insn_file is file of integer;
 begin
@@ -23,9 +23,8 @@ begin
     clk => clk,
     reset => reset,
     inword => curr_insn,
-    outword => outword,
     write_enable => write_enable,
-    pc => pc
+    state => state
   );
 
   test: process is
@@ -76,7 +75,9 @@ begin
     for i in 0 to 100 loop
       clk <= '0';
       wait for 10 ns;
-      write(outline, "0x" & to_hstring(unsigned(outword)));
+      write(outline, "0x" & to_hstring(unsigned(state.curr_insn)));
+      write(outline, " -- rs1 : " & integer'image(register_t'pos(state.rs1)) & ", rs2: " & integer'image(register_t'pos(state.rs2)));
+      write(outline, " .. rd = " & integer'image(register_t'pos(state.rd)));
       writeline(output, outline);
       clk <= '1';
       wait for 10 ns;

@@ -14,7 +14,7 @@ all: riscvdriver | insns.bin
 run: all
 	$(GHDL) -r $(GHDLFLAGS) $(ENTITIES)
 
-riscvdriver: mem.anal riscv.anal riscv_driver.anal
+riscvdriver: types.anal mem.anal register_file.anal riscv.anal riscv_driver.anal
 	$(GHDL) -e $(GHDLFLAGS) $@
 
 vpath %.vhdl ./src
