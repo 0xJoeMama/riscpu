@@ -10,9 +10,9 @@ entity RiscVDriver is
 end entity RiscVDriver;
 
 architecture Beh of RiscvDriver is
-  signal clk : std_logic;
-  signal reset: std_logic;
-  signal write_enable : std_logic;
+  signal clk : std_logic := '0';
+  signal reset: std_logic := '0';
+  signal write_enable : std_logic := '0';
   signal curr_insn : word_t := (others => '0');
 
   signal state: cpu_state_t;
@@ -40,17 +40,23 @@ begin
 
     reset <= '0';
     write_enable <= '1';
-    clk <= '1';
-    wait for 10 ns;
-
     report "Enabled write mode to map instructions to memory";
-    clk <= '0';
-    wait for 10 ns;
 
     while not endfile(infile) and j < 128 loop
       read(infile, insn);
       curr_insn <= std_logic_vector(to_signed(insn, curr_insn'length));
       wait for 10 ns;
+      clk <= '1';
+      wait for 10 ns;
+      clk <= '0';
+      wait for 10 ns;
+      j := j + 1;
+    end loop;
+
+    curr_insn <= (others => '0');
+    wait for 10 ns;
+
+    while j < 127 loop
       clk <= '1';
       wait for 10 ns;
       clk <= '0';
@@ -78,6 +84,8 @@ begin
       write(outline, "0x" & to_hstring(unsigned(state.curr_insn)));
       write(outline, " -- rs1 : " & integer'image(register_t'pos(state.rs1)) & ", rs2: " & integer'image(register_t'pos(state.rs2)));
       write(outline, " .. rd = " & integer'image(register_t'pos(state.rd)));
+      write(outline, " alu: " & integer'image(to_integer(signed(state.alu_res))));
+      write(outline, " imm: " & integer'image(to_integer(signed(state.imm))));
       writeline(output, outline);
       clk <= '1';
       wait for 10 ns;

@@ -22,6 +22,10 @@ package types is
     t3, t4, t5, t6 -- x28-x31
   );
 
+  type ALUOp is (Add, Sl, Slt, Sltu, LXor, Sr, LOr, LAnd);
+  type ALUSrc is (Reg, Imm);
+  type WriteBackValue is (Memory, AluRes);
+
   type cpu_state_t is record
     pc: addr_t;
     curr_insn: word_t;
@@ -30,8 +34,58 @@ package types is
     rd: register_t;
     rs1_content: word_t;
     rs2_content: word_t;
+    alu_res : word_t;
+    imm: word_t;
+    alu_src: ALUSrc;
   end record;
+
+  type control_t is record
+    alu_op: ALUOp;
+    C_in: std_logic;
+    alu_src: ALUSrc;
+    mem_write: std_logic;
+    mem_read: std_logic;
+    to_write: WriteBackValue;
+    reg_write : std_logic;
+  end record;
+
+  function vec_to_alu_op(
+  vec: std_logic_vector(2 downto 0)
+  ) return ALUOp;
+
+  function is_zero(
+    vec: std_logic_vector
+  ) return std_logic;
 end package types;
 
 package body types is
+  function vec_to_alu_op(
+    vec: std_logic_vector(2 downto 0)
+  ) return ALUOp is
+  begin
+    case vec is
+      when "000" => return Add;
+      when "001" => return Sl;
+      when "010" => return Slt;
+      when "011" => return Sltu;
+      when "100" => return LXor;
+      when "101" => return Sr;
+      when "110" => return LOr;
+      when "111" => return LAnd;
+      when others => return Add;
+    end case;
+  end function;
+
+  function is_zero(
+    vec: std_logic_vector
+  ) return std_logic is
+    variable median : integer;
+  begin 
+    if vec'left = vec'right then
+      return vec(vec'left);
+    end if;
+
+    median := vec'right + (vec'length - 1) / 2;
+    return is_zero(vec(median downto vec'right)) and is_zero(vec(vec'left downto median + 1));
+  end function;
 end package body types;

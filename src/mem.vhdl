@@ -20,7 +20,7 @@ end entity Mem;
 
 architecture Beh of Mem is
   type mem_array is array(0 to BYTES - 1) of std_logic_vector(7 downto 0);
-  signal cells: mem_array;
+  signal cells: mem_array := (others => (others => '0'));
 begin
   process (clk) is
   begin
