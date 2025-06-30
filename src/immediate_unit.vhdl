@@ -25,7 +25,7 @@ begin
   u_immediate <= insn(31 downto 12);
   -- [20| 10:1 |11|19:12]
   --  31 30-20  19 18-12
-  uj_immediate <= insn(31 downto 31) & insn(18 downto 12) & insn(19 downto 19) & insn(30 downto 20) & '0';
+  uj_immediate <= insn(31 downto 31) & insn(19 downto 12) & insn(20 downto 20) & insn(30 downto 21) & '0';
 
   with insn(6 downto 0) select
     immediate_signed <= resize(signed(i_immediate), immediate'length)  when "0010011",

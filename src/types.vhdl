@@ -24,7 +24,9 @@ package types is
 
   type ALUOp is (Add, Sl, Slt, Sltu, LXor, Sr, LOr, LAnd);
   type ALUSrc is (Reg, Imm);
-  type WriteBackValue is (Memory, AluRes);
+  type WriteBackValue is (Memory, NextPC, AluRes);
+
+  type BranchType is (Beq, Bne, Blt, Bge, Bltu, Bgeu);
 
   type cpu_state_t is record
     pc: addr_t;
@@ -37,6 +39,8 @@ package types is
     alu_res : word_t;
     imm: word_t;
     alu_src: ALUSrc;
+    branch_taken : std_logic;
+    terminate: std_logic;
   end record;
 
   type control_t is record
@@ -47,6 +51,9 @@ package types is
     mem_read: std_logic;
     to_write: WriteBackValue;
     reg_write : std_logic;
+    branch: std_logic;
+    branch_type: BranchType;
+    jump: std_logic;
   end record;
 
   function vec_to_alu_op(

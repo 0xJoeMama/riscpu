@@ -78,7 +78,7 @@ begin
     
     report "Start execution";
 
-    for i in 0 to 100 loop
+    while not state.terminate loop
       clk <= '0';
       wait for 10 ns;
       write(outline, "0x" & to_hstring(unsigned(state.curr_insn)));
@@ -86,10 +86,12 @@ begin
       write(outline, " .. rd = " & integer'image(register_t'pos(state.rd)));
       write(outline, " alu: " & integer'image(to_integer(signed(state.alu_res))));
       write(outline, " imm: " & integer'image(to_integer(signed(state.imm))));
+      write(outline, " take branch?: " & std_logic'image(state.branch_taken));
       writeline(output, outline);
       clk <= '1';
       wait for 10 ns;
     end loop;
+
     wait;
   end process test;
 end architecture Beh;

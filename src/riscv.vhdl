@@ -32,12 +32,17 @@ architecture Beh of RiscV is
     mem_write => '0',
     mem_read => '0',
     to_write => AluRes,
-    reg_write => '0'
+    reg_write => '0',
+    branch => '0',
+    branch_type => Beq,
+    jump => '0'
   );
   signal immediate: word_t := (others => '0');
   signal alu_in_2: word_t := (others => '0');
   signal mem_out: word_t := (others => '0'); 
   signal write_back: word_t := (others => '0'); 
+  signal branch_taken: std_logic := '0';
+  signal zero: std_logic := '0';
 begin
   instruction_memory: entity work.Mem generic map (BYTES => 512) port map(
     clk => clk,
@@ -72,6 +77,7 @@ begin
     b => alu_in_2,
     s => alu_res,
     op => control.alu_op,
+    zero => zero,
     C_in => control.C_in
   );
 
@@ -90,12 +96,20 @@ begin
     outword => mem_out
   );
 
+  branch_controller: entity work.BranchController port map(
+    btype => control.branch_type,
+    alu_res => alu_res,
+    zero => zero,
+    taken => branch_taken
+  );
+
   rd <= register_t'val(to_integer(unsigned(curr_insn(11 downto 7))));
   rs1 <= register_t'val(to_integer(unsigned(curr_insn(19 downto 15))));
   rs2 <= register_t'val(to_integer(unsigned(curr_insn(24 downto 20))));
 
   with control.to_write select
     write_back <= alu_res when AluRes,
+                  std_logic_vector(pc + 4) when NextPC,
                   mem_out when Memory;
 
   with control.alu_src select
@@ -107,7 +121,11 @@ begin
     if reset = '1' then
       pc <= INITIAL_ADDRESS;
     elsif rising_edge(clk) then
-      pc <= pc + 4;
+      if ((control.branch and branch_taken) or control.jump) = '1' then
+        pc <= pc + unsigned(immediate);
+      else
+        pc <= pc + 4;
+      end if;
     end if;
   end process pc_update;
 
@@ -121,6 +139,8 @@ begin
     rs2_content => reg2_value,
     alu_res => alu_res,
     imm => immediate,
-    alu_src => control.alu_src
+    alu_src => control.alu_src,
+    branch_taken => (branch_taken and control.branch) or control.jump,
+    terminate => is_zero(curr_insn)
   );
 end architecture Beh;

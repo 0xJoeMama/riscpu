@@ -7,6 +7,6 @@ __start:
 loeoep:
   beq t0, zero, out
   addi t0, t0, -1
-  jal loeoep
+  jal zero, loeoep
 out:
   
