@@ -34,8 +34,9 @@ architecture Beh of RiscV is
     to_write => AluRes,
     reg_write => '0',
     branch => '0',
-    branch_type => Beq,
-    jump => '0'
+    jal => '0',
+    jalr => '0',
+    branch_type => Beq
   );
   signal immediate: word_t := (others => '0');
   signal alu_in_2: word_t := (others => '0');
@@ -121,10 +122,20 @@ begin
     if reset = '1' then
       pc <= INITIAL_ADDRESS;
     elsif rising_edge(clk) then
-      if ((control.branch and branch_taken) or control.jump) = '1' then
-        pc <= pc + unsigned(immediate);
-      else
+      if write_enable = '1' then
         pc <= pc + 4;
+      else
+        if control.jal = '1' then
+          -- PC relative addressing for jal(uses immediate)
+          pc <= pc + unsigned(immediate);
+        elsif control.jalr = '1' then
+          pc <= unsigned(alu_res);
+        elsif (control.branch and branch_taken) = '1' then
+          -- PC relative addressing for successful branching
+          pc <= pc + unsigned(immediate);
+        else
+          pc <= pc + 4;
+        end if;
       end if;
     end if;
   end process pc_update;
@@ -140,7 +151,7 @@ begin
     alu_res => alu_res,
     imm => immediate,
     alu_src => control.alu_src,
-    branch_taken => (branch_taken and control.branch) or control.jump,
+    branch_taken => (branch_taken and control.branch) or control.jal or control.jalr,
     terminate => is_zero(curr_insn)
   );
 end architecture Beh;

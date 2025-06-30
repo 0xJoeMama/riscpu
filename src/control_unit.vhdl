@@ -48,7 +48,6 @@ begin
   control.reg_write <= '1' when opcode /= "1100011" and opcode /= "0100011" else '0'; -- all instructions except branch, jumps and sw/sh/sb write back to a register
 
   control.branch <= '1' when opcode = "1100011" else '0';
-  control.jump <= '1' when opcode = "1100111" or opcode = "1101111" else '0';
   with funct3 select
     control.branch_type <= Beq  when "000",
                            Bne  when "001",
@@ -57,4 +56,7 @@ begin
                            Bltu when "110",
                            Bgeu when "111",
                            Beq  when others;
+
+  control.jal <= '1' when opcode = "1101111" else '0';
+  control.jalr <= '1' when opcode = "1100111" else '0';
 end architecture Beh;

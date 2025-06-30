@@ -27,6 +27,7 @@ package types is
   type WriteBackValue is (Memory, NextPC, AluRes);
 
   type BranchType is (Beq, Bne, Blt, Bge, Bltu, Bgeu);
+  type JumpType is (Jal, Jalr);
 
   type cpu_state_t is record
     pc: addr_t;
@@ -53,7 +54,8 @@ package types is
     reg_write : std_logic;
     branch: std_logic;
     branch_type: BranchType;
-    jump: std_logic;
+    jal: std_logic;
+    jalr: std_logic;
   end record;
 
   function vec_to_alu_op(

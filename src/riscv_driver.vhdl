@@ -56,7 +56,7 @@ begin
     curr_insn <= (others => '0');
     wait for 10 ns;
 
-    while j < 127 loop
+    while j < 128 loop
       clk <= '1';
       wait for 10 ns;
       clk <= '0';
