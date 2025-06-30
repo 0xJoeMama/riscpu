@@ -82,7 +82,7 @@ package body types is
     variable median : integer;
   begin 
     if vec'left = vec'right then
-      return vec(vec'left);
+      return not vec(vec'left);
     end if;
 
     median := vec'right + (vec'length - 1) / 2;

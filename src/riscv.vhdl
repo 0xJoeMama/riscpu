@@ -16,7 +16,7 @@ end entity RiscV;
 architecture Beh of RiscV is
   -- TODO: initial address is 0 by default
   constant INITIAL_ADDRESS: addr_t := resize(x"0", WORD_SIZE);
-  signal pc_internal : addr_t := (others => '0');
+  signal pc : addr_t := (others => '0');
   signal curr_insn: word_t := (others => '0');
 
   signal rd: register_t := zero;
@@ -41,18 +41,16 @@ architecture Beh of RiscV is
 begin
   instruction_memory: entity work.Mem generic map (BYTES => 512) port map(
     clk => clk,
-    reset => reset,
     read => not write_enable,
     write => write_enable,
-    write_addr => pc_internal,
-    read_addr => pc_internal,
+    write_addr => pc,
+    read_addr => pc,
     inword => inword,
     outword => curr_insn
   );
 
   registers: entity work.RegisterFile port map(
     clk => clk,
-    reset => reset,
     rd => rd,
     rs1 => rs1,
     rs2 => rs2,
@@ -63,7 +61,9 @@ begin
   );
 
   control_unit : entity work.ControlUnit port map(
-    insn => curr_insn,
+    opcode => curr_insn(6 downto 0),
+    funct3 => curr_insn(14 downto 12),
+    funct7 => curr_insn(31 downto 25),
     control => control
   );
 
@@ -82,7 +82,6 @@ begin
 
   data_mem: entity work.Mem port map (
     clk => clk,
-    reset => reset,
     inword => reg2_value,
     read_addr => unsigned(alu_res),
     write_addr => unsigned(alu_res),
@@ -106,15 +105,14 @@ begin
   pc_update: process (clk, reset) is
   begin
     if reset = '1' then
-      pc_internal <= INITIAL_ADDRESS;
+      pc <= INITIAL_ADDRESS;
     elsif rising_edge(clk) then
-      pc_internal <= pc_internal + 4;
+      pc <= pc + 4;
     end if;
   end process pc_update;
 
-  -- TODO: currently the only result we produce is the program counter
   state <= (
-    pc => pc_internal,
+    pc => pc,
     curr_insn => curr_insn,
     rd => rd,
     rs1 => rs1,

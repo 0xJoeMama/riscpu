@@ -6,7 +6,6 @@ use work.types.all;
 entity RegisterFile is
   port (
     clk: in std_logic;
-    reset: in std_logic;
     rs1: in register_t;
     rs2: in register_t;
     rd: in register_t;
@@ -21,13 +20,9 @@ architecture Beh of RegisterFile is
   type registers is array(register_t'left to register_t'right) of word_t;
   signal regs: registers := (others => (others => '0'));
 begin
-  process (clk) is
+  process (clk, write_enable) is
   begin
-    if reset = '1' then
-      for i in register_t'left to register_t'right loop
-        regs(i) <= (others => '0');
-      end loop;
-    elsif rising_edge(clk) and write_enable = '1' then
+    if rising_edge(clk) and write_enable = '1' then
       if rd /= zero then
         regs(rd) <= inword;
       end if;
@@ -36,6 +31,4 @@ begin
 
   outword1 <= regs(rs1);
   outword2 <= regs(rs2);
-  -- hardwire zero to ground
-  regs(zero) <= (others => '0');
 end architecture Beh;

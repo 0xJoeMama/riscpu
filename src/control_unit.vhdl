@@ -5,20 +5,17 @@ use work.types.all;
 
 entity ControlUnit is
   port (
-    insn: in word_t;
+    opcode : in std_logic_vector(6 downto 0);
+    funct3 : in std_logic_vector(2 downto 0);
+    funct7 : in std_logic_vector(6 downto 0);
     control: out control_t
   );
 end entity ControlUnit;
 
 architecture Beh of ControlUnit is
   signal alu_op: std_logic_vector(2 downto 0) := "000";
-  signal funct3 : std_logic_vector(2 downto 0) := "000";
   signal add_sig: std_logic_vector(2 downto 0) := std_logic_vector(to_unsigned(AluOP'pos(Add), 3));
-  signal opcode: std_logic_vector(6 downto 0) := (others => '0');
 begin
-  funct3 <= insn(14 downto 12);
-  opcode <= insn(6 downto 0);
-
   with opcode select
     alu_op <= funct3 when "0010011", -- I type arithmetic logic insns
               funct3 when "0110011", -- R type arithmetic logic insns
@@ -30,7 +27,7 @@ begin
 
 
   -- TODO: srai srli needs to be handled separately
-  control.c_in <= insn(30) when opcode = "0110011" else  -- handle subtraction for R instructions
+  control.c_in <= funct7(5) when opcode = "0110011" else  -- handle subtraction for R instructions
                   '1' when opcode = "1100011" else '0'; -- handle subtraction for Branch instructions
   control.alu_op <= vec_to_alu_op(alu_op);
 
