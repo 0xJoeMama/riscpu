@@ -78,7 +78,7 @@ begin
     
     report "Start execution";
 
-    while not state.terminate loop
+    while state.terminate /= '1' loop
       clk <= '0';
       wait for 10 ns;
       write(outline, "0x" & to_hstring(unsigned(state.curr_insn)));

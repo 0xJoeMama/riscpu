@@ -129,6 +129,7 @@ begin
           -- PC relative addressing for jal(uses immediate)
           pc <= pc + unsigned(immediate);
         elsif control.jalr = '1' then
+          -- absolute addressing with ALU result
           pc <= unsigned(alu_res);
         elsif (control.branch and branch_taken) = '1' then
           -- PC relative addressing for successful branching
