@@ -19,7 +19,7 @@ end entity Mem;
 
 architecture Beh of Mem is
   type mem_array is array(natural range <>) of word_t;
-  signal ram: mem_array(0 to BYTES / 4 - 1);
+  signal ram: mem_array(0 to BYTES / 4 - 1) := (others => (others => '0'));
 
   signal real_read_addr: addr_t;
   signal real_write_addr: addr_t;

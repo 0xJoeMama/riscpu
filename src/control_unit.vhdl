@@ -26,9 +26,10 @@ begin
               add_sig when others;
 
 
-  -- TODO: srai srli needs to be handled separately
-  control.c_in <= funct7(5) when opcode = "0110011" else  -- handle subtraction for R instructions
-                  '1' when opcode = "1100011" else '0'; -- handle subtraction for Branch instructions
+  control.c_in <= funct7(5) when opcode = "0110011" else  -- handle subtraction for R instructions as well as srai srli
+                  funct7(5) when opcode = "0010011" and funct3 = "101" else -- handle srai srli
+                  '1'       when opcode = "1100011" else '0'; -- handle subtraction for Branch instructions
+
   control.alu_op <= vec_to_alu_op(alu_op);
 
   with opcode select
