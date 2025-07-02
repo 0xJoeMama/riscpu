@@ -44,17 +44,11 @@ architecture Beh of RiscV is
   signal write_back: word_t := (others => '0'); 
   signal branch_taken: std_logic := '0';
   signal zero: std_logic := '0';
+  signal write_word : word_t := (others => '0');
+  signal write_addr : addr_t := (others => '0');
+  signal mem_write : std_logic  := '0';
+  signal mem_read : std_logic  := '0';
 begin
-  instruction_memory: entity work.Mem generic map (BYTES => 512) port map(
-    clk => clk,
-    read => not write_enable,
-    write => write_enable,
-    write_addr => pc,
-    read_addr => pc,
-    inword => inword,
-    outword => curr_insn
-  );
-
   registers: entity work.RegisterFile port map(
     clk => clk,
     rd => rd,
@@ -87,14 +81,18 @@ begin
     immediate => immediate
   );
 
-  data_mem: entity work.Mem port map (
+  mem_write <= control.mem_write or write_enable;
+  mem_read <= control.mem_read and not write_enable;
+  mem: entity work.Mem generic map (BYTES => 4096) port map (
     clk => clk,
-    inword => reg2_value,
+    write => mem_write,
+    read => mem_read,
     read_addr => unsigned(alu_res),
-    write_addr => unsigned(alu_res),
-    write => control.mem_write,
-    read => control.mem_read,
-    outword => mem_out
+    insn_addr => pc,
+    write_addr => write_addr,
+    inword => write_word,
+    outword => mem_out,
+    outinsn => curr_insn
   );
 
   branch_controller: entity work.BranchController port map(
@@ -103,6 +101,9 @@ begin
     zero => zero,
     taken => branch_taken
   );
+
+  write_word <= reg2_value when write_enable = '0' else inword;
+  write_addr <= unsigned(alu_res) when write_enable = '0' else pc;
 
   rd <= register_t'val(to_integer(unsigned(curr_insn(11 downto 7))));
   rs1 <= register_t'val(to_integer(unsigned(curr_insn(19 downto 15))));
@@ -153,6 +154,6 @@ begin
     imm => immediate,
     alu_src => control.alu_src,
     branch_taken => (branch_taken and control.branch) or control.jal or control.jalr,
-    terminate => is_zero(curr_insn)
+    terminate => is_zero(curr_insn) and not write_enable
   );
 end architecture Beh;

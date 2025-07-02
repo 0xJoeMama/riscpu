@@ -85,16 +85,23 @@ package body types is
     end case;
   end function;
 
-  function is_zero(
+  function is_non_zero(
     vec: std_logic_vector
   ) return std_logic is
     variable median : integer;
   begin 
     if vec'left = vec'right then
-      return not vec(vec'left);
+      return vec(vec'left);
     end if;
 
     median := vec'right + (vec'length - 1) / 2;
-    return is_zero(vec(median downto vec'right)) and is_zero(vec(vec'left downto median + 1));
+    return is_non_zero(vec(median downto vec'right)) or is_non_zero(vec(vec'left downto median + 1));
+  end function;
+
+  function is_zero(
+    vec: std_logic_vector
+  ) return std_logic is
+  begin
+    return not is_non_zero(vec);
   end function;
 end package body types;

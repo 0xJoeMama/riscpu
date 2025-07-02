@@ -11,8 +11,10 @@ entity Mem is
     read: in std_logic;
     write: in std_logic;
     read_addr: in addr_t;
+    insn_addr: in addr_t;
     write_addr: in addr_t;
     inword: in word_t;
+    outinsn: out word_t;
     outword: out word_t
   );
 end entity Mem;
@@ -23,6 +25,7 @@ architecture Beh of Mem is
 
   signal real_read_addr: addr_t;
   signal real_write_addr: addr_t;
+  signal real_insn_addr: addr_t;
 
   -- the following 2 functions implement little-endianness for the CPU
   function flip_endianess(
@@ -36,6 +39,7 @@ begin
   -- we trash the bottom 2 bytes
   real_read_addr <= shift_right(read_addr, 2) when read = '1' else (others => '0');
   real_write_addr <= shift_right(write_addr, 2);
+  real_insn_addr <= shift_right(insn_addr, 2);
 
   process (clk) is
   begin
@@ -47,4 +51,5 @@ begin
   end process;
 
   outword <= flip_endianess(ram(to_integer(real_read_addr)));
+  outinsn <= flip_endianess(ram(to_integer(real_insn_addr)));
 end architecture Beh;
