@@ -27,6 +27,10 @@ architecture Beh of Mem is
   signal real_write_addr: addr_t;
   signal real_insn_addr: addr_t;
 
+  -- used to bring the addresses given to us within the address range we can query
+  -- basically performs a % BYTES operation
+  constant normalization_mask : addr_t := to_unsigned(BYTES, 32) - 1;
+
   -- the following 2 functions implement little-endianness for the CPU
   function flip_endianess(
     word: word_t
@@ -37,9 +41,9 @@ architecture Beh of Mem is
   end function;
 begin
   -- we trash the bottom 2 bytes
-  real_read_addr <= shift_right(read_addr, 2) when read = '1' else (others => '0');
-  real_write_addr <= shift_right(write_addr, 2);
-  real_insn_addr <= shift_right(insn_addr, 2);
+  real_read_addr  <= shift_right(read_addr and normalization_mask , 2) when read = '1' else (others => '0');
+  real_insn_addr  <= shift_right(insn_addr and normalization_mask, 2);
+  real_write_addr <= shift_right(write_addr and normalization_mask, 2);
 
   process (clk) is
   begin

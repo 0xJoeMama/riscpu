@@ -39,7 +39,7 @@ begin
                        Imm      when others;
 
   control.mem_write <= '1' when opcode = "0100011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
-  control.mem_read <= '1' when opcode = "0000011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
+  control.mem_read  <= '1' when opcode = "0000011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
   with opcode select
     control.to_write <= Memory   when "0000011",
                         NextPC   when "1100111",
