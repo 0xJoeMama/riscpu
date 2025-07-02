@@ -130,19 +130,17 @@ begin
       -- if we are in privilaged write mode, we just go to the next address by default
       if write_enable = '1' then
         pc <= pc + 4;
+      elsif control.jal = '1' then
+        -- PC relative addressing for jal(uses immediate)
+        pc <= pc + unsigned(immediate);
+      elsif control.jalr = '1' then
+        -- absolute addressing with ALU result
+        pc <= unsigned(alu_res);
+      elsif (control.branch and branch_taken) = '1' then
+        -- PC relative addressing for successful branching
+        pc <= pc + unsigned(immediate);
       else
-        if control.jal = '1' then
-          -- PC relative addressing for jal(uses immediate)
-          pc <= pc + unsigned(immediate);
-        elsif control.jalr = '1' then
-          -- absolute addressing with ALU result
-          pc <= unsigned(alu_res);
-        elsif (control.branch and branch_taken) = '1' then
-          -- PC relative addressing for successful branching
-          pc <= pc + unsigned(immediate);
-        else
-          pc <= pc + 4;
-        end if;
+        pc <= pc + 4;
       end if;
     end if;
   end process pc_update;
