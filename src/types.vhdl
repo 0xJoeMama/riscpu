@@ -42,6 +42,7 @@ package types is
     alu_src: ALUSrc;
     branch_taken : std_logic;
     terminate: std_logic;
+    mem_out: word_t;
   end record;
 
   type control_t is record

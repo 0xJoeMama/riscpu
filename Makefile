@@ -1,5 +1,5 @@
 GHDL=ghdl
-GHDLFLAGS=--std=08 -v
+GHDLFLAGS=--std=08
 AS=riscv64-linux-gnu-as
 ASFLAGS=-march=rv32i
 LD=riscv64-linux-gnu-ld

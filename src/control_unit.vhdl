@@ -26,7 +26,7 @@ begin
               add_sig when others;
 
 
-  control.c_in <= funct7(5) when opcode = "0110011" else  -- handle subtraction for R instructions as well as srai srli
+  control.c_in <= funct7(5) when opcode = "0110011" else  -- handle subtraction for R instructions
                   funct7(5) when opcode = "0010011" and funct3 = "101" else -- handle srai srli
                   '1'       when opcode = "1100011" else '0'; -- handle subtraction for Branch instructions
 
@@ -39,13 +39,13 @@ begin
                        Imm      when others;
 
   control.mem_write <= '1' when opcode = "0100011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
-  control.mem_read <= '1' when opcode = "000011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
+  control.mem_read <= '1' when opcode = "0000011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
   with opcode select
-  control.to_write <= Memory   when "0000011",
-                      NextPC   when "1100111",
-                      NextPC   when "1101111",
-                      UpperImm when "0110111",
-                      AluRes   when others;
+    control.to_write <= Memory   when "0000011",
+                        NextPC   when "1100111",
+                        NextPC   when "1101111",
+                        UpperImm when "0110111",
+                        AluRes   when others;
 
   -- TODO: this is not correct as we need to handle jumps which store the program counter to a register
   control.reg_write <= '1' when opcode /= "1100011" and opcode /= "0100011" else '0'; -- all instructions except branch and sw/sh/sb write back to a register
@@ -62,6 +62,5 @@ begin
 
   control.jal <= '1' when opcode = "1101111" else '0';
   control.jalr <= '1' when opcode = "1100111" else '0';
-
   control.auipc <= '1' when opcode = "0010111" else '0';
 end architecture Beh;

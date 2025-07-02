@@ -30,8 +30,8 @@ begin
   with op select
                   -- this is used to support subtraction and division in the same branch in the ALU
     s_internal <= std_logic_vector(signed(a) + signed(b xor c_in_mask) + signed(c_in_word)) when Add, 
-                  std_logic_vector(resize(signed_diff(31 downto 31), s_internal'length)) when Slt,
-                  std_logic_vector(resize(unsigned_diff(32 downto 32), s_internal'length)) when Sltu,
+                  std_logic_vector(resize(unsigned(signed_diff(31 downto 31)), s_internal'length)) when Slt,
+                  std_logic_vector(resize(unsigned_diff(32 downto 31), s_internal'length)) when Sltu,
                   std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b)))) when Sl,
                   right_shift_res when Sr,
                   a xor b when LXor,

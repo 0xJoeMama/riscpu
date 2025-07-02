@@ -157,6 +157,7 @@ begin
     imm => immediate,
     alu_src => control.alu_src,
     branch_taken => (branch_taken and control.branch) or control.jal or control.jalr,
-    terminate => is_zero(curr_insn) and not write_enable
+    terminate => is_zero(curr_insn) and not write_enable,
+    mem_out => mem_out
   );
 end architecture Beh;

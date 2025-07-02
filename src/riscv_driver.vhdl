@@ -86,6 +86,7 @@ begin
       write(outline, " .. rd = " & integer'image(register_t'pos(state.rd)));
       write(outline, " alu: " & integer'image(to_integer(signed(state.alu_res))));
       write(outline, " imm: " & integer'image(to_integer(signed(state.imm))));
+      write(outline, " mem: " & to_hstring(state.mem_out));
       write(outline, " take branch?: " & std_logic'image(state.branch_taken));
       writeline(output, outline);
       clk <= '1';
