@@ -50,7 +50,6 @@ package types is
     C_in: std_logic;
     alu_src: ALUSrc;
     mem_write: std_logic;
-    mem_read: std_logic;
     to_write: WriteBackValue;
     reg_write : std_logic;
     branch: std_logic;

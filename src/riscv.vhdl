@@ -30,7 +30,6 @@ architecture Beh of RiscV is
     c_in => '0',
     alu_src => Imm,
     mem_write => '0',
-    mem_read => '0',
     to_write => AluRes,
     reg_write => '0',
     branch => '0',
@@ -86,7 +85,6 @@ begin
   mem: entity work.Mem generic map (BYTES => 4096) port map (
     clk => clk,
     write => control.mem_write or write_enable,
-    read => control.mem_read and not write_enable,
     read_addr => unsigned(alu_res),
     insn_addr => pc,
     write_addr => write_addr,

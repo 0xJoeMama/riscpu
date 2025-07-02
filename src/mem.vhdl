@@ -8,7 +8,6 @@ entity Mem is
   port (
     -- TODO: perhaps move away from synchronous ram?
     clk: in std_logic;
-    read: in std_logic;
     write: in std_logic;
     read_addr: in addr_t;
     insn_addr: in addr_t;
@@ -41,7 +40,7 @@ architecture Beh of Mem is
   end function;
 begin
   -- we trash the bottom 2 bytes
-  real_read_addr  <= shift_right(read_addr and normalization_mask , 2) when read = '1' else (others => '0');
+  real_read_addr  <= shift_right(read_addr and normalization_mask, 2);
   real_insn_addr  <= shift_right(insn_addr and normalization_mask, 2);
   real_write_addr <= shift_right(write_addr and normalization_mask, 2);
 
