@@ -17,8 +17,8 @@ architecture Beh of ControlUnit is
   signal add_sig: std_logic_vector(2 downto 0) := std_logic_vector(to_unsigned(AluOP'pos(Add), 3));
 begin
   with opcode select
-    alu_op <= funct3 when "0010011", -- I type arithmetic logic insns
-              funct3 when "0110011", -- R type arithmetic logic insns
+    alu_op <= funct3  when "0010011", -- I type arithmetic logic insns
+              funct3  when "0110011", -- R type arithmetic logic insns
               add_sig when "1100011", -- branch instructions
               add_sig when "0000011", -- lw, lh, lb, lhu, lbu
               add_sig when "0100011", -- sw, sh, sb
@@ -33,22 +33,24 @@ begin
   control.alu_op <= vec_to_alu_op(alu_op);
 
   with opcode select
-    control.alu_src <= Reg when "0110011", -- R type instructions
-                       Reg when "1100011", -- branch instructions
-                       Imm when others;
+    control.alu_src <= Reg      when "0110011", -- R type instructions
+                       Reg      when "1100011", -- branch instructions
+                       UpperImm when "0010111", -- AUIPC
+                       Imm      when others;
 
   control.mem_write <= '1' when opcode = "0100011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
   control.mem_read <= '1' when opcode = "000011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
   with opcode select
-  control.to_write <= Memory when "0000011",
-                      NextPC when "1100111",
-                      NextPC when "1101111",
-                      AluRes when others;
+  control.to_write <= Memory   when "0000011",
+                      NextPC   when "1100111",
+                      NextPC   when "1101111",
+                      UpperImm when "0110111",
+                      AluRes   when others;
 
   -- TODO: this is not correct as we need to handle jumps which store the program counter to a register
-  control.reg_write <= '1' when opcode /= "1100011" and opcode /= "0100011" else '0'; -- all instructions except branch, jumps and sw/sh/sb write back to a register
-
+  control.reg_write <= '1' when opcode /= "1100011" and opcode /= "0100011" else '0'; -- all instructions except branch and sw/sh/sb write back to a register
   control.branch <= '1' when opcode = "1100011" else '0';
+
   with funct3 select
     control.branch_type <= Beq  when "000",
                            Bne  when "001",
@@ -60,4 +62,6 @@ begin
 
   control.jal <= '1' when opcode = "1101111" else '0';
   control.jalr <= '1' when opcode = "1100111" else '0';
+
+  control.auipc <= '1' when opcode = "0010111" else '0';
 end architecture Beh;

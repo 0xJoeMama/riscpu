@@ -6,7 +6,8 @@ use work.types.all;
 entity ImmediateUnit is
   port (
   insn: in word_t;
-  immediate: out word_t
+  immediate: out word_t;
+  upper_immediate: out word_t
   );
 end entity ImmediateUnit;
 
@@ -41,4 +42,5 @@ begin
                         (others => '0') when others;
 
   immediate <= std_logic_vector(immediate_signed);
+  upper_immediate <= std_logic_vector(shift_left(immediate_signed, 12));
 end architecture Beh;

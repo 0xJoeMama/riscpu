@@ -23,8 +23,8 @@ package types is
   );
 
   type ALUOp is (Add, Sl, Slt, Sltu, LXor, Sr, LOr, LAnd);
-  type ALUSrc is (Reg, Imm);
-  type WriteBackValue is (Memory, NextPC, AluRes);
+  type ALUSrc is (Reg, Imm, UpperImm);
+  type WriteBackValue is (Memory, NextPC, UpperImm, AluRes);
 
   type BranchType is (Beq, Bne, Blt, Bge, Bltu, Bgeu);
   type JumpType is (Jal, Jalr);
@@ -56,6 +56,7 @@ package types is
     branch_type: BranchType;
     jal: std_logic;
     jalr: std_logic;
+    auipc: std_logic;
   end record;
 
   function vec_to_alu_op(

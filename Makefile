@@ -1,7 +1,9 @@
 GHDL=ghdl
 GHDLFLAGS=--std=08 -v
 AS=riscv64-linux-gnu-as
+ASFLAGS=-march=rv32i
 LD=riscv64-linux-gnu-ld
+LDFLAGS=-b elf32-littleriscv
 OBJCOPY=riscv64-linux-gnu-objcopy
 
 ENTITIES=riscvdriver
@@ -26,10 +28,10 @@ vpath %.vhdl ./src
 vpath %.s ./programs/
 
 %.elf: %.o
-	$(LD) -T./programs/minimal.ld $^ -o $@
+	$(LD) $(LDFLAGS) -T./programs/minimal.ld $^ -o $@
 
 %.o: %.s
-	$(AS) $^ -o $@
+	$(AS) $(ASFLAGS) $^ -o $@
 
 insns.bin: $(PROGRAM)
 	$(OBJCOPY) -O binary $< $@

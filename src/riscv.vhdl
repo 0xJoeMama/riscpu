@@ -36,9 +36,12 @@ architecture Beh of RiscV is
     branch => '0',
     jal => '0',
     jalr => '0',
-    branch_type => Beq
+    branch_type => Beq,
+    auipc => '0'
   );
   signal immediate: word_t := (others => '0');
+  signal upper_immediate : word_t := (others => '0');
+  signal alu_in_1: word_t := (others => '0');
   signal alu_in_2: word_t := (others => '0');
   signal mem_out: word_t := (others => '0'); 
   signal write_back: word_t := (others => '0'); 
@@ -46,8 +49,6 @@ architecture Beh of RiscV is
   signal zero: std_logic := '0';
   signal write_word : word_t := (others => '0');
   signal write_addr : addr_t := (others => '0');
-  signal mem_write : std_logic  := '0';
-  signal mem_read : std_logic  := '0';
 begin
   registers: entity work.RegisterFile port map(
     clk => clk,
@@ -68,7 +69,7 @@ begin
   );
 
   alu: entity work.ALU port map(
-    a => reg1_value,
+    a => alu_in_1,
     b => alu_in_2,
     s => alu_res,
     op => control.alu_op,
@@ -78,15 +79,14 @@ begin
 
   immediate_unit: entity work.ImmediateUnit port map(
     insn => curr_insn,
-    immediate => immediate
+    immediate => immediate,
+    upper_immediate => upper_immediate
   );
 
-  mem_write <= control.mem_write or write_enable;
-  mem_read <= control.mem_read and not write_enable;
   mem: entity work.Mem generic map (BYTES => 4096) port map (
     clk => clk,
-    write => mem_write,
-    read => mem_read,
+    write => control.mem_write or write_enable,
+    read => control.mem_read and not write_enable,
     read_addr => unsigned(alu_res),
     insn_addr => pc,
     write_addr => write_addr,
@@ -112,17 +112,22 @@ begin
   with control.to_write select
     write_back <= alu_res when AluRes,
                   std_logic_vector(pc + 4) when NextPC,
+                  upper_immediate when UpperImm,
                   mem_out when Memory;
 
   with control.alu_src select
     alu_in_2 <= reg2_value when Reg,
+                upper_immediate when UpperImm,
                 immediate when Imm;
+
+  alu_in_1 <= reg1_value when control.auipc = '0' else std_logic_vector(pc);
 
   pc_update: process (clk, reset) is
   begin
     if reset = '1' then
       pc <= INITIAL_ADDRESS;
     elsif rising_edge(clk) then
+      -- if we are in privilaged write mode, we just go to the next address by default
       if write_enable = '1' then
         pc <= pc + 4;
       else
