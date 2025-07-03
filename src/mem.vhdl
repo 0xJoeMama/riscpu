@@ -6,7 +6,6 @@ use work.types.all;
 entity Mem is
   generic(BYTES: integer := 1024);
   port (
-    -- TODO: perhaps move away from synchronous ram?
     clk: in std_logic;
     write: in std_logic;
     read_addr: in addr_t;

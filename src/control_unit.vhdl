@@ -48,7 +48,6 @@ begin
                         UpperImm when "0110111",
                         AluRes   when others;
 
-  -- TODO: this is not correct as we need to handle jumps which store the program counter to a register
   control.reg_write <= '1' when opcode /= "1100011" and opcode /= "0100011" else '0'; -- all instructions except branch and sw/sh/sb write back to a register
   control.branch <= '1' when opcode = "1100011" else '0';
 
