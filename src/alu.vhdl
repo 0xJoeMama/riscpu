@@ -10,28 +10,32 @@ entity ALU is
     C_in: in std_logic;
     op: in ALUOp;
     s: out word_t;
-    zero: out std_logic
+    zero: out std_logic;
+    C_out : out std_logic
   );
 end entity ALU;
 
 architecture Beh of ALU is
-  signal c_in_word : word_t := (others => '0');
+  signal c_in_word : std_logic_vector(32 downto 0) := (others => '0');
   signal right_shift_res : word_t;
-  signal c_in_mask : word_t := (others => '0');
+  signal c_in_mask : std_logic_vector(32 downto 0) := (others => '0');
   signal s_internal : word_t := (others => '0');
+
+  signal slt_res : word_t := (others => '0');
   signal shift_amt : unsigned(4 downto 0) := (others => '0');
-  signal unsigned_diff: unsigned(32 downto 0);
-  signal signed_diff : signed(31 downto 0);
+  signal add_res : std_logic_vector(32 downto 0);
 begin
   c_in_word(0) <= C_in;
   c_in_mask <= (others => C_in);
   shift_amt <= unsigned(b(4 downto 0));
 
+  add_res <= std_logic_vector(unsigned("0" & a) + unsigned(("0" & b) xor c_in_mask) + unsigned(c_in_word));
+
   with op select
                   -- this is used to support subtraction and division in the same branch in the ALU
-    s_internal <= std_logic_vector(signed(a) + signed(b xor c_in_mask) + signed(c_in_word)) when Add, 
-                  std_logic_vector(resize(unsigned(signed_diff(31 downto 31)), s_internal'length)) when Slt,
-                  std_logic_vector(resize(unsigned_diff(32 downto 31), s_internal'length)) when Sltu,
+    s_internal <= add_res(31 downto 0) when Add,
+                  slt_res when Slt,
+                  slt_res when Sltu,
                   std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b)))) when Sl,
                   right_shift_res when Sr,
                   a xor b when LXor,
@@ -39,8 +43,9 @@ begin
                   a and b when LAnd,
                   (others => '0') when others;
 
-  unsigned_diff <= resize(unsigned(a), 33) - resize(unsigned(b), 33);
-  signed_diff <= signed(a) - signed(b);
+  C_out <= add_res(32);
+
+  slt_res(0) <= add_res(31) when op = Slt else add_res(32);
 
   with C_in select
     right_shift_res <= std_logic_vector(shift_right(unsigned(a), to_integer(shift_amt))) when '0',

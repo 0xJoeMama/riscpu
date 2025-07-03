@@ -48,6 +48,7 @@ architecture Beh of RiscV is
   signal zero: std_logic := '0';
   signal write_word : word_t := (others => '0');
   signal write_addr : addr_t := (others => '0');
+  signal c_out : std_logic := '0';
 begin
   registers: entity work.RegisterFile port map(
     clk => clk,
@@ -70,10 +71,11 @@ begin
   alu: entity work.ALU port map(
     a => alu_in_1,
     b => alu_in_2,
+    C_in => control.C_in,
     s => alu_res,
     op => control.alu_op,
     zero => zero,
-    C_in => control.C_in
+    C_out => c_out
   );
 
   immediate_unit: entity work.ImmediateUnit port map(
@@ -95,7 +97,8 @@ begin
 
   branch_controller: entity work.BranchController port map(
     btype => control.branch_type,
-    alu_res => alu_res,
+    sign_bit => alu_res(31),
+    c_out => c_out,
     zero => zero,
     taken => branch_taken
   );

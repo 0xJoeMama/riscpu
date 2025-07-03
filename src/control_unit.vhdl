@@ -26,7 +26,9 @@ begin
               add_sig when others;
 
 
-  control.c_in <= funct7(5) when opcode = "0110011" else  -- handle subtraction for R instructions
+  control.c_in <= '1'       when opcode = "0110011" and (funct3 = "010" or funct3 = "011") else -- R type slt and sltu
+                  funct7(5) when opcode = "0110011" else  -- handle subtraction for R instructions
+                  '1'       when opcode = "0010011" and (funct3 = "010" or funct3 = "011") else -- I type stli sltui
                   funct7(5) when opcode = "0010011" and funct3 = "101" else -- handle srai srli
                   '1'       when opcode = "1100011" else '0'; -- handle subtraction for Branch instructions
 
