@@ -36,7 +36,9 @@ architecture Beh of RiscV is
     jal => '0',
     jalr => '0',
     branch_type => Beq,
-    auipc => '0'
+    auipc => '0',
+    sign_extend => '0',
+    mem_mode => Non
   );
   signal immediate: word_t := (others => '0');
   signal upper_immediate : word_t := (others => '0');
@@ -49,6 +51,7 @@ architecture Beh of RiscV is
   signal write_word : word_t := (others => '0');
   signal write_addr : addr_t := (others => '0');
   signal c_out : std_logic := '0';
+  signal mem_mode : MemMode_t; 
 begin
   registers: entity work.RegisterFile port map(
     clk => clk,
@@ -86,13 +89,15 @@ begin
 
   mem: entity work.Mem generic map (BYTES => 4096) port map (
     clk => clk,
-    write => control.mem_write or write_enable,
+    write_enable => control.mem_write or write_enable,
     read_addr => unsigned(alu_res),
     insn_addr => pc,
     write_addr => write_addr,
     inword => write_word,
     outword => mem_out,
-    outinsn => curr_insn
+    insn => curr_insn,
+    sign_extend => control.sign_extend,
+    mem_mode => mem_mode
   );
 
   branch_controller: entity work.BranchController port map(
@@ -105,6 +110,8 @@ begin
 
   write_word <= reg2_value when write_enable = '0' else inword;
   write_addr <= unsigned(alu_res) when write_enable = '0' else pc;
+
+  mem_mode <= control.mem_mode when write_enable = '0' else Word;
 
   rd <= register_t'val(to_integer(unsigned(curr_insn(11 downto 7))));
   rs1 <= register_t'val(to_integer(unsigned(curr_insn(19 downto 15))));
@@ -159,6 +166,7 @@ begin
     alu_src => control.alu_src,
     branch_taken => (branch_taken and control.branch) or control.jal or control.jalr,
     terminate => is_zero(curr_insn) and not write_enable,
-    mem_out => mem_out
+    mem_out => mem_out,
+    mem_write => control.mem_write
   );
 end architecture Beh;

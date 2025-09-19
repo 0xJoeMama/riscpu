@@ -63,4 +63,11 @@ begin
   control.jal <= '1' when opcode = "1101111" else '0';
   control.jalr <= '1' when opcode = "1100111" else '0';
   control.auipc <= '1' when opcode = "0010111" else '0';
+
+  control.sign_extend <= not funct3(2);
+  with funct3(1 downto 0) select
+    control.mem_mode <= Byte when "00",
+                        Half when "01",
+                        Word when "10",
+                        Non when others;
 end architecture Beh;

@@ -29,7 +29,6 @@ begin
 
   test: process is
     file infile: insn_file;
-    variable j : integer := 0;
     variable insn: integer;
     variable outline: line;
   begin
@@ -42,7 +41,7 @@ begin
     write_enable <= '1';
     report "Enabled write mode to map instructions to memory";
 
-    while not endfile(infile) and j < 128 loop
+    while not endfile(infile) loop
       read(infile, insn);
       curr_insn <= std_logic_vector(to_signed(insn, curr_insn'length));
       wait for 10 ns;
@@ -50,23 +49,12 @@ begin
       wait for 10 ns;
       clk <= '0';
       wait for 10 ns;
-      j := j + 1;
-    end loop;
-
-    curr_insn <= (others => '0');
-    wait for 10 ns;
-
-    while j < 128 loop
-      clk <= '1';
-      wait for 10 ns;
-      clk <= '0';
-      wait for 10 ns;
-      j := j + 1;
     end loop;
 
     file_close(infile);
     write_enable <= '0';
     report "Instructions written, disabling write mode";
+    wait for 10 ns;
 
     report "Resetting CPU state";
 
@@ -81,7 +69,7 @@ begin
     while state.terminate /= '1' loop
       clk <= '0';
       wait for 10 ns;
-      write(outline, "0x" & to_hstring(unsigned(state.curr_insn)));
+      write(outline, "pc : " & integer'image(to_integer(state.pc)) & " 0x" & to_hstring(unsigned(state.curr_insn)));
       write(outline, " -- rs1 : " & integer'image(register_t'pos(state.rs1)) & ", rs2: " & integer'image(register_t'pos(state.rs2)));
       write(outline, " .. rd = " & integer'image(register_t'pos(state.rd)));
       write(outline, " alu: " & integer'image(to_integer(signed(state.alu_res))));

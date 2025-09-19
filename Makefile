@@ -14,9 +14,13 @@ all: riscvdriver | insns.bin
 
 .PHONY: run
 run: all
-	$(GHDL) -r  $(GHDLFLAGS) $(ENTITIES) --ieee-asserts=disable-at-0 --backtrace-severity=warning
+	$(GHDL) -r  $(GHDLFLAGS) $(ENTITIES) --ieee-asserts=disable-at-0 --stats
 
-riscvdriver: types.anal immediate_unit.anal alu.anal branch_controller.anal control_unit.anal mem.anal register_file.anal riscv.anal riscv_driver.anal
+.PHONY: mem_test
+mem_test: all
+	$(GHDL) -r  $(GHDLFLAGS) memtb --ieee-asserts=disable-at-0 --stats
+
+riscvdriver: types.anal immediate_unit.anal alu.anal branch_controller.anal control_unit.anal mem.anal register_file.anal riscv.anal riscv_driver.anal mem_tb.anal
 	$(GHDL) -e $(GHDLFLAGS) $@
 
 vpath %.vhdl ./src

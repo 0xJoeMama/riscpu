@@ -2,4 +2,5 @@
 *.elf
 *.bin
 *.o
+vivado_project/
 

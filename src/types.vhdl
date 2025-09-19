@@ -43,7 +43,10 @@ package types is
     branch_taken : std_logic;
     terminate: std_logic;
     mem_out: word_t;
+    mem_write: std_logic;
   end record;
+
+  type MemMode_t is (Non, Byte, Half, Word);
 
   type control_t is record
     alu_op: ALUOp;
@@ -57,6 +60,8 @@ package types is
     jal: std_logic;
     jalr: std_logic;
     auipc: std_logic;
+    mem_mode: MemMode_t;
+    sign_extend: std_logic;
   end record;
 
   function vec_to_alu_op(
