@@ -18,6 +18,7 @@ architecture Beh of RiscV is
   constant INITIAL_ADDRESS: addr_t := resize(x"0", WORD_SIZE);
   signal pc : addr_t := (others => '0');
   signal curr_insn: word_t := (others => '0');
+  signal terminate: std_logic := '0';
 
   signal rd: register_t := zero;
   signal rs1: register_t := zero;
@@ -51,7 +52,9 @@ architecture Beh of RiscV is
   signal write_word : word_t := (others => '0');
   signal write_addr : addr_t := (others => '0');
   signal c_out : std_logic := '0';
-  signal mem_mode : MemMode_t; 
+  signal mem_mode : MemMode_t := Non; 
+  signal mem_write : std_logic := '0';
+  signal taken_status : std_logic := '0';
 begin
   registers: entity work.RegisterFile port map(
     clk => clk,
@@ -87,9 +90,10 @@ begin
     upper_immediate => upper_immediate
   );
 
+  mem_write <= control.mem_write or write_enable;
   mem: entity work.Mem generic map (BYTES => 4096) port map (
     clk => clk,
-    write_enable => control.mem_write or write_enable,
+    write_enable => mem_write,
     read_addr => unsigned(alu_res),
     insn_addr => pc,
     write_addr => write_addr,
@@ -153,6 +157,10 @@ begin
     end if;
   end process pc_update;
 
+  terminate <= not write_enable when (curr_insn = x"00000000") else '0';
+
+  taken_status <= (branch_taken and control.branch) or control.jal or control.jalr;
+
   state <= (
     pc => pc,
     curr_insn => curr_insn,
@@ -164,8 +172,8 @@ begin
     alu_res => alu_res,
     imm => immediate,
     alu_src => control.alu_src,
-    branch_taken => (branch_taken and control.branch) or control.jal or control.jalr,
-    terminate => is_zero(curr_insn) and not write_enable,
+    branch_taken => taken_status,
+    terminate => terminate,
     mem_out => mem_out,
     mem_write => control.mem_write
   );
