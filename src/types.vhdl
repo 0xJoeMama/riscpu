@@ -64,6 +64,22 @@ package types is
     sign_extend: std_logic;
   end record;
 
+  constant ZEROED_CONTROL : control_t := (
+    alu_op => Add,
+    c_in => '0',
+    alu_src => Imm,
+    mem_write => '0',
+    to_write => AluRes,
+    reg_write => '0',
+    branch => '0',
+    jal => '0',
+    jalr => '0',
+    branch_type => Beq,
+    auipc => '0',
+    sign_extend => '0',
+    mem_mode => Non
+  );
+
   function vec_to_alu_op(
   vec: std_logic_vector(2 downto 0)
   ) return ALUOp;
@@ -71,6 +87,28 @@ package types is
   function is_zero(
     vec: std_logic_vector
   ) return std_logic;
+
+  -- pipeline stage states
+  type if_state_t is record
+    insn: word_t;
+    pc: addr_t;
+  end record;
+
+  type decode_state_t is record
+    pc : addr_t;
+    control: control_t;
+    immediate: word_t;
+    upper_immediate: word_t;
+    rs1_value: word_t;
+    rs2_value: word_t;
+    rd: register_t;
+  end record;
+
+  type execute_state_t is record
+    decode_state: decode_state_t;
+    alu_res: word_t;
+    branch_taken: std_logic;
+  end record;
 end package types;
 
 package body types is

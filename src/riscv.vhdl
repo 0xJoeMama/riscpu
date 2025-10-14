@@ -21,41 +21,16 @@ architecture Beh of RiscV is
   signal terminate: std_logic := '0';
 
   -- IF state
-  signal curr_insn: word_t := (others => '0');
+  signal if_in: word_t := (others => '0');
+  signal if_out: if_state_t;
 
   -- ID state
-  signal rd: register_t := zero;
   signal rs1: register_t := zero;
   signal rs2: register_t := zero;
-  signal control: control_t := (
-    alu_op => Add,
-    c_in => '0',
-    alu_src => Imm,
-    mem_write => '0',
-    to_write => AluRes,
-    reg_write => '0',
-    branch => '0',
-    jal => '0',
-    jalr => '0',
-    branch_type => Beq,
-    auipc => '0',
-    sign_extend => '0',
-    mem_mode => Non
-  );
   signal reg1_value: word_t := (others => '0');
   signal reg2_value: word_t := (others => '0');
-  -- EX inputs(part of ID)
-  signal alu_in_1: word_t := (others => '0');
-  signal alu_in_2: word_t := (others => '0');
-  signal immediate: word_t := (others => '0');
-  signal upper_immediate : word_t := (others => '0');
+  signal decode_state : decode_state_t;
 
-  -- EX state
-  signal alu_res : word_t := (others => '0');
-  signal zero: std_logic := '0';
-  signal c_out : std_logic := '0';
-  -- branch results(found in EX)
-  signal branch_taken: std_logic := '0';
   signal taken_status : std_logic := '0';
 
   -- MEM state
@@ -68,6 +43,25 @@ architecture Beh of RiscV is
   -- WB state
   signal write_back: word_t := (others => '0'); 
 begin
+  fetch: entity work.InstructionFetch port map(
+    clk => clk,
+    clear => reset,
+    pc => pc,
+    ininsn => if_in,
+    insn => if_out
+  );
+
+  decode: entity work.InstructionDecode port map(
+    clk => clk,
+    clear => reset,
+    if_state => if_out,
+    rs1_value => reg1_value,
+    rs2_value => reg2_value,
+    rs1 => rs1,
+    rs2 => rs2,
+    decode_state => decode_state
+  );
+
   registers: entity work.RegisterFile port map(
     clk => clk,
     rd => rd,
@@ -79,29 +73,6 @@ begin
     write_enable => control.reg_write
   );
 
-  control_unit : entity work.ControlUnit port map(
-    opcode => curr_insn(6 downto 0),
-    funct3 => curr_insn(14 downto 12),
-    funct7 => curr_insn(31 downto 25),
-    control => control
-  );
-
-  alu: entity work.ALU port map(
-    a => alu_in_1,
-    b => alu_in_2,
-    C_in => control.C_in,
-    s => alu_res,
-    op => control.alu_op,
-    zero => zero,
-    C_out => c_out
-  );
-
-  immediate_unit: entity work.ImmediateUnit port map(
-    insn => curr_insn,
-    immediate => immediate,
-    upper_immediate => upper_immediate
-  );
-
   mem_write <= control.mem_write or write_enable;
   mem: entity work.Mem generic map (BYTES => 4096) port map (
     clk => clk,
@@ -111,40 +82,20 @@ begin
     write_addr => write_addr,
     inword => write_word,
     outword => mem_out,
-    insn => curr_insn,
+    insn => if_in,
     sign_extend => control.sign_extend,
     mem_mode => mem_mode
   );
 
-  branch_controller: entity work.BranchController port map(
-    btype => control.branch_type,
-    sign_bit => alu_res(31),
-    c_out => c_out,
-    zero => zero,
-    taken => branch_taken
-  );
-
-  write_word <= reg2_value when write_enable = '0' else inword;
   write_addr <= unsigned(alu_res) when write_enable = '0' else pc;
 
   mem_mode <= control.mem_mode when write_enable = '0' else Word;
-
-  rd <= register_t'val(to_integer(unsigned(curr_insn(11 downto 7))));
-  rs1 <= register_t'val(to_integer(unsigned(curr_insn(19 downto 15))));
-  rs2 <= register_t'val(to_integer(unsigned(curr_insn(24 downto 20))));
 
   with control.to_write select
     write_back <= alu_res when AluRes,
                   std_logic_vector(pc + 4) when NextPC,
                   upper_immediate when UpperImm,
                   mem_out when Memory;
-
-  with control.alu_src select
-    alu_in_2 <= reg2_value when Reg,
-                upper_immediate when UpperImm,
-                immediate when Imm;
-
-  alu_in_1 <= reg1_value when control.auipc = '0' else std_logic_vector(pc);
 
   pc_update: process (clk, reset) is
   begin

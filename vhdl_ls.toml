@@ -2,7 +2,8 @@ standard = "2008"
 
 [libraries]
 riscv.files = [
-  "./src/*.vhdl"
+  "./src/*.vhdl",
+  "./src/stages/*.vhdl"
 ]
 
 [lint]
