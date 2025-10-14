@@ -17,15 +17,16 @@ architecture Beh of RiscV is
   -- TODO: initial address is 0 by default
   constant INITIAL_ADDRESS: addr_t := resize(x"0", WORD_SIZE);
   signal pc : addr_t := (others => '0');
-  signal curr_insn: word_t := (others => '0');
+  -- When a termination word is found (aka 0x00000000), we stop the processor
   signal terminate: std_logic := '0';
 
+  -- IF state
+  signal curr_insn: word_t := (others => '0');
+
+  -- ID state
   signal rd: register_t := zero;
   signal rs1: register_t := zero;
   signal rs2: register_t := zero;
-  signal reg1_value: word_t := (others => '0');
-  signal reg2_value: word_t := (others => '0');
-  signal alu_res : word_t := (others => '0');
   signal control: control_t := (
     alu_op => Add,
     c_in => '0',
@@ -41,20 +42,31 @@ architecture Beh of RiscV is
     sign_extend => '0',
     mem_mode => Non
   );
-  signal immediate: word_t := (others => '0');
-  signal upper_immediate : word_t := (others => '0');
+  signal reg1_value: word_t := (others => '0');
+  signal reg2_value: word_t := (others => '0');
+  -- EX inputs(part of ID)
   signal alu_in_1: word_t := (others => '0');
   signal alu_in_2: word_t := (others => '0');
-  signal mem_out: word_t := (others => '0'); 
-  signal write_back: word_t := (others => '0'); 
-  signal branch_taken: std_logic := '0';
+  signal immediate: word_t := (others => '0');
+  signal upper_immediate : word_t := (others => '0');
+
+  -- EX state
+  signal alu_res : word_t := (others => '0');
   signal zero: std_logic := '0';
+  signal c_out : std_logic := '0';
+  -- branch results(found in EX)
+  signal branch_taken: std_logic := '0';
+  signal taken_status : std_logic := '0';
+
+  -- MEM state
   signal write_word : word_t := (others => '0');
   signal write_addr : addr_t := (others => '0');
-  signal c_out : std_logic := '0';
   signal mem_mode : MemMode_t := Non; 
   signal mem_write : std_logic := '0';
-  signal taken_status : std_logic := '0';
+  signal mem_out: word_t := (others => '0'); 
+
+  -- WB state
+  signal write_back: word_t := (others => '0'); 
 begin
   registers: entity work.RegisterFile port map(
     clk => clk,
