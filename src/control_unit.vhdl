@@ -49,8 +49,12 @@ begin
                         AluRes   when others;
 
   control.reg_write <= '1' when opcode /= "1100011" and opcode /= "0100011" else '0'; -- all instructions except branch and sw/sh/sb write back to a register
-  control.branch <= '1' when opcode = "1100011" else '0';
 
+  with opcode select
+  control.branch_mode <= Branch when "1100011",
+                         Jal when "1101111",
+                         Jalr when "1100111",
+                         Non when others;
   with funct3 select
     control.branch_type <= Beq  when "000",
                            Bne  when "001",
@@ -60,8 +64,6 @@ begin
                            Bgeu when "111",
                            Beq  when others;
 
-  control.jal <= '1' when opcode = "1101111" else '0';
-  control.jalr <= '1' when opcode = "1100111" else '0';
   control.auipc <= '1' when opcode = "0010111" else '0';
 
   control.sign_extend <= not funct3(2);

@@ -17,8 +17,7 @@ begin
   if_id: process (clk, clear) is
   begin
     if clear = '1' then
-      insn.insn <= (others => '0');
-      insn.pc <= (others => '0');
+      insn <= ZERO_IF_STATE;
     elsif rising_edge(clk) then
       insn.insn <= ininsn;
       insn.pc <= pc;

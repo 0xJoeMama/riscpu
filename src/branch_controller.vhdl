@@ -5,11 +5,11 @@ use work.types.all;
 
 entity BranchController is
   port(
-  btype: in BranchType;
-  sign_bit : in std_logic;
-  c_out : in std_logic;
-  zero: in std_logic;
-  taken: out std_logic
+    btype: in BranchType;
+    sign_bit : in std_logic;
+    c_out : in std_logic;
+    zero: in std_logic;
+    taken: out std_logic
   );
 end entity BranchController;
 

@@ -17,7 +17,7 @@ entity InstructionDecode is
 end entity InstructionDecode;
 
 architecture Beh of InstructionDecode is
-  signal insn : word_t := if_state.insn;
+  signal insn: word_t := if_state.insn;
   signal control: control_t := ZEROED_CONTROL;
   signal immediate: word_t := (others => '0');
   signal upper_immediate : word_t := (others => '0');
@@ -43,14 +43,7 @@ begin
   id_ex: process (clk, clear) is
   begin
     if clear = '1' then
-      decode_state.control <= ZEROED_CONTROL;
-      decode_state.immediate <= (others => '0');
-      decode_state.upper_immediate <= (others => '0');
-      decode_state.rs1_value <= rs1_value;
-      decode_state.rs1_value <= (others => '0');
-      decode_state.rs2_value <= (others => '0');
-      decode_state.rd <= zero;
-      decode_state.pc <= (others => '0');
+      decode_state <= ZERO_DECODE_STATE;
     elsif rising_edge(clk) then
       decode_state.control <= control;
       decode_state.immediate <= immediate;

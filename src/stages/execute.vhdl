@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use work.types.all;
 
 entity Execute is
@@ -20,13 +21,12 @@ architecture Beh of Execute is
   signal zero: std_logic := '0';
   signal c_out : std_logic := '0';
 
-  signal branch_taken: std_logic := '0';
+  signal next_pc : addr_t := (others => '0');
 begin
   with control.alu_src select
     alu_in_2 <= decode_state.rs2_value when Reg,
                 decode_state.upper_immediate when UpperImm,
                 decode_state.immediate when Imm;
-
 
   alu_in_1 <= decode_state.rs1_value when control.auipc = '0' else std_logic_vector(decode_state.pc);
 
@@ -40,24 +40,17 @@ begin
     C_out => c_out
   );
 
-  branch_controller: entity work.BranchController port map(
-    btype => control.branch_type,
-    sign_bit => alu_res(31),
-    c_out => c_out,
-    zero => zero,
-    taken => branch_taken
-  );
+  next_pc <= decode_state.pc + unsigned(decode_state.immediate);
 
   ex_mem: process (clk, clear) is
   begin
     if clear = '1' then
-      ex_state.alu_res <= (others => '0');
-      ex_state.decode_state <= decode_state;
-      ex_state.branch_taken <= '0';
+      ex_state <= ZERO_EX_STATE;
     elsif rising_edge(clk) then
       ex_state.alu_res <= alu_res;
       ex_state.decode_state <= decode_state;
-      ex_state.branch_taken <= branch_taken;
+      ex_state.c_out <= c_out;
+      ex_state.zero <= zero;
     end if;
   end process ex_mem;
 end architecture Beh;

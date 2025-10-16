@@ -6,11 +6,11 @@ LD=riscv64-linux-gnu-ld
 LDFLAGS=-b elf32-littleriscv
 OBJCOPY=riscv64-linux-gnu-objcopy
 
-ENTITIES=riscvdriver
+ENTITIES=riscv
 PROGRAM=simple.elf
 
 .PHONY: all
-all: riscvdriver | insns.bin
+all: $(ENTITIES) | insns.bin
 
 .PHONY: run
 run: all
@@ -20,7 +20,7 @@ run: all
 mem_test: all
 	$(GHDL) -r  $(GHDLFLAGS) memtb --ieee-asserts=disable-at-0 --stats
 
-riscvdriver: types.anal immediate_unit.anal alu.anal branch_controller.anal control_unit.anal mem.anal register_file.anal stages/fetch.anal stages/decode.anal stages/execute.vhdl riscv.anal riscv_driver.anal mem_tb.anal
+riscv: types.anal immediate_unit.anal alu.anal branch_controller.anal control_unit.anal mem.anal register_file.anal stages/fetch.anal stages/decode.anal stages/execute.anal stages/memory.anal stages/write_back.anal riscv.anal
 	$(GHDL) -e $(GHDLFLAGS) $@
 
 vpath %.vhdl ./src

@@ -29,25 +29,18 @@ package types is
   type BranchType is (Beq, Bne, Blt, Bge, Bltu, Bgeu);
   type JumpType is (Jal, Jalr);
 
-  type cpu_state_t is record
-    pc: addr_t;
-    curr_insn: word_t;
-    rs1: register_t;
-    rs2: register_t;
-    rd: register_t;
-    rs1_content: word_t;
-    rs2_content: word_t;
-    alu_res : word_t;
-    imm: word_t;
-    alu_src: ALUSrc;
-    branch_taken : std_logic;
-    terminate: std_logic;
-    mem_out: word_t;
-    mem_write: std_logic;
-  end record;
 
   type MemMode_t is (Non, Byte, Half, Word);
 
+  type MemDataInterface_t is record
+    mode: MemMode_t;
+    addr: addr_t;
+    sign_extend: std_logic;
+    write_enable: std_logic;
+    inword: word_t;
+  end record;
+
+  type BranchMode is (Non, Branch, Jal, Jalr);
   type control_t is record
     alu_op: ALUOp;
     C_in: std_logic;
@@ -55,10 +48,8 @@ package types is
     mem_write: std_logic;
     to_write: WriteBackValue;
     reg_write : std_logic;
-    branch: std_logic;
+    branch_mode : BranchMode;
     branch_type: BranchType;
-    jal: std_logic;
-    jalr: std_logic;
     auipc: std_logic;
     mem_mode: MemMode_t;
     sign_extend: std_logic;
@@ -71,9 +62,7 @@ package types is
     mem_write => '0',
     to_write => AluRes,
     reg_write => '0',
-    branch => '0',
-    jal => '0',
-    jalr => '0',
+    branch_mode => Non,
     branch_type => Beq,
     auipc => '0',
     sign_extend => '0',
@@ -94,6 +83,11 @@ package types is
     pc: addr_t;
   end record;
 
+  constant ZERO_IF_STATE : if_state_t := (
+    insn => (others => '0'),
+    pc => (others => '0')
+  );
+
   type decode_state_t is record
     pc : addr_t;
     control: control_t;
@@ -104,11 +98,48 @@ package types is
     rd: register_t;
   end record;
 
+  constant ZERO_DECODE_STATE : decode_state_t := (
+    pc => (others => '0'),
+    control => ZEROED_CONTROL,
+    immediate => (others => '0'),
+    upper_immediate => (others => '0'),
+    rs1_value => (others => '0'),
+    rs2_value => (others => '0'),
+    rd => zero
+  );
+
+  -- TODO: this currently holds wayyy to much information because we delegate the previous state
+  -- we can save a lot of connections by removing things we do not need on the phase we stop needing them
   type execute_state_t is record
     decode_state: decode_state_t;
     alu_res: word_t;
-    branch_taken: std_logic;
+    c_out : std_logic;
+    zero: std_logic;
+    next_pc: addr_t;
   end record;
+
+  constant ZERO_EX_STATE : execute_state_t := (
+    decode_state => ZERO_DECODE_STATE,
+    alu_res => (others => '0'),
+    c_out => '0',
+    zero => '0',
+    next_pc => (others => '-')
+  );
+
+  type mem_state_t is record
+     -- we need ex_state here because we may want to write the result of a computation to a register instead of using it to write to memory
+    ex_state: execute_state_t;
+    read_value: word_t;
+    branch_taken: std_logic;
+    next_pc : addr_t;
+  end record;
+
+  constant ZERO_MEM_STATE : mem_state_t := (
+    ex_state => ZERO_EX_STATE,
+    read_value => (others => '0'),
+    branch_taken => '0',
+    next_pc => (others => '-')
+  );
 end package types;
 
 package body types is
