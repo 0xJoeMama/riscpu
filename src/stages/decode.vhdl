@@ -10,19 +10,22 @@ entity InstructionDecode is
     if_state: in if_state_t;
     rs1_value: in word_t;
     rs2_value: in word_t;
-    decode_state : out decode_state_t;
+    decode_state: out decode_state_t;
     rs1: out register_t;
     rs2: out register_t
   );
 end entity InstructionDecode;
 
 architecture Beh of InstructionDecode is
-  signal insn: word_t := if_state.insn;
+  signal insn: word_t;
+
   signal control: control_t := ZEROED_CONTROL;
   signal immediate: word_t := (others => '0');
   signal upper_immediate : word_t := (others => '0');
   signal rd: register_t := zero;
 begin
+  insn <= if_state.insn;
+
   control_unit : entity work.ControlUnit port map(
     opcode => insn(6 downto 0),
     funct3 => insn(14 downto 12),

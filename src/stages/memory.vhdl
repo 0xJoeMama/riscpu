@@ -16,12 +16,13 @@ entity Memory is
 end entity Memory;
 
 architecture Beh of Memory is
-  signal control : control_t := ex_state.decode_state.control;
+  signal control : control_t;
   signal take_branch: std_logic;
 
   signal branch_taken: std_logic := '0';
   signal next_pc: addr_t := (others => '-');
 begin
+  control <= ex_state.decode_state.control;
   mem_iface.addr <= unsigned(ex_state.alu_res);
   mem_iface.sign_extend <= control.sign_extend;
   mem_iface.mode <= control.mem_mode;

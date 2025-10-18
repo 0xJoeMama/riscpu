@@ -13,7 +13,7 @@ entity Execute is
 end entity Execute;
 
 architecture Beh of Execute is
-  signal control : control_t := decode_state.control;
+  signal control : control_t;
   signal alu_in_1: word_t := (others => '0');
   signal alu_in_2: word_t := (others => '0');
 
@@ -23,6 +23,7 @@ architecture Beh of Execute is
 
   signal next_pc : addr_t := (others => '0');
 begin
+  control <= decode_state.control;
   with control.alu_src select
     alu_in_2 <= decode_state.rs2_value when Reg,
                 decode_state.upper_immediate when UpperImm,
@@ -51,6 +52,7 @@ begin
       ex_state.decode_state <= decode_state;
       ex_state.c_out <= c_out;
       ex_state.zero <= zero;
+      ex_state.next_pc <= next_pc;
     end if;
   end process ex_mem;
 end architecture Beh;

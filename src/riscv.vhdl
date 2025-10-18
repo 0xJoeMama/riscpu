@@ -4,19 +4,21 @@ use ieee.std_logic_1164.all;
 use work.types.all;
 
 entity RiscV is
-  port(
+  port (
     clk: in std_logic;
-    reset: in std_logic
+    reset: in std_logic;
+    disable: in std_logic;
+    insn : in word_t;
+    pc : inout addr_t;
+    mem_iface : out MemDataInterface_t
   );
 end entity RiscV;
 
 architecture Beh of RiscV is
   -- TODO: initial address is 0 by default
   constant INITIAL_ADDRESS: addr_t := resize(x"0", WORD_SIZE);
-  signal pc : addr_t := (others => '0');
 
   -- IF state
-  signal if_in: word_t := (others => '0');
   signal if_out: if_state_t := ZERO_IF_STATE;
 
   -- ID state
@@ -27,8 +29,6 @@ architecture Beh of RiscV is
   signal decode_state : decode_state_t := ZERO_DECODE_STATE;
 
   -- MEM state
-  -- TODO: zero-initialize
-  signal mem_iface : MemDataInterface_t;
   signal mem_out : word_t := (others => '0');
   signal mem_state: mem_state_t := ZERO_MEM_STATE;
   signal ex_state: execute_state_t := ZERO_EX_STATE;
@@ -42,7 +42,7 @@ begin
     clk => clk,
     clear => reset,
     pc => pc,
-    ininsn => if_in,
+    ininsn => insn,
     insn => if_out
   );
 
@@ -91,20 +91,12 @@ begin
     write_enable => reg_write
   );
 
-  -- TODO: replace with an MMU to be able to abstract things and make life easier later
-  -- 4kiB ought to be enough for anybody am i right?
-  memory: entity work.Mem generic map (BYTES => 4096) port map (
-    clk => clk,
-    insn_addr => pc,
-    insn => if_in,
-    outword => mem_out,
-    data_iface => mem_iface
-  );
-
-  pc_update: process (clk, reset) is
+  pc_update: process (clk, reset, disable, pc) is
   begin
     if reset = '1' then
       pc <= INITIAL_ADDRESS;
+    elsif disable = '1' then
+      null;
     elsif rising_edge(clk) then
       -- if we are in privilaged write mode, we just go to the next address by default
       if mem_state.branch_taken = '1' then

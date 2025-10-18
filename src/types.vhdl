@@ -29,7 +29,6 @@ package types is
   type BranchType is (Beq, Bne, Blt, Bge, Bltu, Bgeu);
   type JumpType is (Jal, Jalr);
 
-
   type MemMode_t is (Non, Byte, Half, Word);
 
   type MemDataInterface_t is record
@@ -123,7 +122,7 @@ package types is
     alu_res => (others => '0'),
     c_out => '0',
     zero => '0',
-    next_pc => (others => '-')
+    next_pc => (others => '0')
   );
 
   type mem_state_t is record

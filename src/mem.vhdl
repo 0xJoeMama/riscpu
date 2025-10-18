@@ -36,9 +36,9 @@ architecture Beh of Mem is
   signal read_byte : std_logic_vector(7 downto 0);
   signal read_half : std_logic_vector(15 downto 0);
 
-  signal data_addr : addr_t := data_iface.addr;
-  signal mode : MemMode_t := data_iface.mode;
-  signal sign_extend : std_logic := data_iface.sign_extend;
+  signal data_addr : addr_t;
+  signal mode : MemMode_t;
+  signal sign_extend : std_logic;
 
   -- the following 2 functions implement little-endianness for the CPU
   function flip_endianess(
@@ -49,6 +49,10 @@ architecture Beh of Mem is
     return word(7 downto 0) & word(15 downto 8) & word(23 downto 16) & word(31 downto 24);
   end function;
 begin
+  data_addr <= data_iface.addr;
+  mode <= data_iface.mode;
+  sign_extend <= data_iface.sign_extend;
+
   -- we trash the bottom 2 bits
   aligned_data_addr  <= shift_right(data_addr and normalization_mask, 2);
   aligned_insn_addr  <= shift_right(insn_addr and normalization_mask, 2);

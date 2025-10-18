@@ -4,11 +4,11 @@ use work.types.all;
 
 entity InstructionFetch is
   port (
-  clk: in std_logic;
-  clear: in std_logic;
-  pc : in addr_t;
-  ininsn: in word_t;
-  insn: out if_state_t
+    clk: in std_logic;
+    clear: in std_logic;
+    pc : in addr_t;
+    ininsn: in word_t;
+    insn: out if_state_t
   );
 end entity InstructionFetch;
 

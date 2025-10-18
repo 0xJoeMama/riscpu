@@ -13,9 +13,12 @@ entity WriteBack is
 end entity WriteBack;
 
 architecture Beh of WriteBack is
-  signal decode_state : decode_state_t := mem_state.ex_state.decode_state;
-  signal control : control_t := decode_state.control;
+  signal decode_state : decode_state_t;
+  signal control : control_t;
 begin
+  decode_state <=  mem_state.ex_state.decode_state;
+  control <= decode_state.control;
+
   with control.to_write select
     write_back <= mem_state.ex_state.alu_res             when AluRes,
                   std_logic_vector(decode_state.pc + 4)  when NextPC,
