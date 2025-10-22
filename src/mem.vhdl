@@ -103,3 +103,4 @@ begin
 
   outword <= outwords(MemMode_t'pos(mode));
 end architecture Beh;
+

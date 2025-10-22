@@ -32,3 +32,4 @@ begin
   outword1 <= regs(rs1);
   outword2 <= regs(rs2);
 end architecture Beh;
+

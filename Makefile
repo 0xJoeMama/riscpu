@@ -14,7 +14,7 @@ all: $(ENTITIES) | insns.bin
 
 .PHONY: run
 run: all
-	$(GHDL) -r  $(GHDLFLAGS) $(ENTITIES) --ieee-asserts=disable-at-0 --stats
+	$(GHDL) -r  $(GHDLFLAGS) $(ENTITIES) --ieee-asserts=disable-at-0
 
 .PHONY: mem_test
 mem_test: all

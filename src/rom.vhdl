@@ -47,3 +47,4 @@ architecture Beh of Rom is
 begin
   outword <= rom_data(to_integer(unsigned(addr)));
 end architecture Beh;
+

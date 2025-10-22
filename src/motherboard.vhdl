@@ -7,10 +7,8 @@ entity Motherboard is
   port (
     clk : in std_logic;
     reset: in std_logic;
-    dump: in std_logic;
-    inspection_pc: in addr_t;
     debug_port: out word_t;
-    kill_me : out std_logic
+    kill_me: out std_logic
   );
 end entity Motherboard;
 
@@ -20,7 +18,7 @@ architecture Beh of Motherboard is
   signal rom_word: word_t;
   signal cpu_off: std_logic;
 
-  type BootStage is (MapRom, CPU, DumpRam);
+  type BootStage is (MapRom, CPU);
  
   signal curr_stage: BootStage;
   signal insn: word_t;
@@ -31,7 +29,6 @@ architecture Beh of Motherboard is
   signal cpu_iface: MemDataInterface_t;
   signal mem_iface: MemDataInterface_t;
   signal rom_iface: MemDataInterface_t;
-  signal dump_iface: MemDataInterface_t;
 begin
   rom_iface <= (
       mode => Word,
@@ -41,21 +38,14 @@ begin
       inword => rom_word
   );
 
-  dump_iface <= (
-      mode => Word,
-      addr => pc,
-      sign_extend => '0',
-      write_enable => '0',
-      inword => rom_word
-  );
-
   riscv: entity work.RiscV port map (
     clk => clk,
     reset => reset,
     disable => cpu_off,
     pc => cpu_pc,
     insn => insn,
-    mem_iface => cpu_iface
+    mem_iface => cpu_iface,
+    kill_me => kill_me
   );
 
   -- TODO: replace with an MMU to be able to abstract things and make life easier later
@@ -77,18 +67,13 @@ begin
 
   with curr_stage select
     pc <= cpu_pc                              when CPU,
-          resize(mother_pc & "00", pc'length) when MapRom,
-          inspection_pc                       when DumpRam;
+          resize(mother_pc & "00", pc'length) when MapRom;
 
   with curr_stage select
     mem_iface <= cpu_iface  when CPU,
-                 rom_iface  when MapRom,
-                 dump_iface when DumpRam;
+                 rom_iface  when MapRom;
 
   debug_port <= insn;
-
-  kill_me <= '1' when inspection_pc = rom_size - 1 else '0';
-
   fsm: process (clk, reset) is
   begin
     if reset = '1' then
@@ -104,13 +89,7 @@ begin
           curr_stage <= MapRom;
           mother_pc <= mother_pc + 1;
         end if;
-      when CPU => 
-        if dump = '1' then
-          curr_stage <= DumpRam;
-          mother_pc <= to_unsigned(0, mother_pc'length);
-          kill_me <= '0';
-        end if;
-      when DumpRam => null;
+      when CPU => null;
       end case;
     end if;
   end process fsm;

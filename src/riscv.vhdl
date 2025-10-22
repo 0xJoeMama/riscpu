@@ -10,7 +10,8 @@ entity RiscV is
     disable: in std_logic;
     insn : in word_t;
     pc : inout addr_t;
-    mem_iface : out MemDataInterface_t
+    mem_iface : out MemDataInterface_t;
+    kill_me : out std_logic
   );
 end entity RiscV;
 
@@ -40,7 +41,7 @@ architecture Beh of RiscV is
 begin
   ifetch: entity work.InstructionFetch port map(
     clk => clk,
-    clear => reset,
+    flush => reset,
     pc => pc,
     ininsn => insn,
     insn => if_out
@@ -70,7 +71,8 @@ begin
     ex_state => ex_state,
     mem_state => mem_state,
     read_word => mem_out,
-    mem_iface => mem_iface
+    mem_iface => mem_iface,
+    kill_me => kill_me
   );
 
   wb: entity work.WriteBack port map (
@@ -98,7 +100,6 @@ begin
     elsif disable = '1' then
       null;
     elsif rising_edge(clk) then
-      -- if we are in privilaged write mode, we just go to the next address by default
       if mem_state.branch_taken = '1' then
         pc <= mem_state.next_pc;
       else
@@ -107,3 +108,4 @@ begin
     end if;
   end process pc_update;
 end architecture Beh;
+

@@ -28,3 +28,4 @@ begin
   reg_write <= control.reg_write;
   rd <= decode_state.rd;
 end architecture Beh;
+

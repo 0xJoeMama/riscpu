@@ -32,7 +32,7 @@ begin
   add_res <= std_logic_vector(unsigned("0" & a) + unsigned(("0" & b) xor c_in_mask) + unsigned(c_in_word));
 
   with op select
-                  -- this is used to support subtraction and division in the same branch in the ALU
+    -- this is used to support subtraction and division in the same branch in the ALU
     s_internal <= add_res(31 downto 0) when Add,
                   slt_res when Slt,
                   slt_res when Sltu,
@@ -54,3 +54,4 @@ begin
   zero <= is_zero(s_internal);
   s <= s_internal;
 end architecture Beh;
+

@@ -7,5 +7,12 @@ __start:
   nop
   nop
   nop
-  nop
   sw t0, 0(zero)
+  lw t1, 0(zero)
+
+  li t0, 0x100000
+  nop
+  nop
+  nop
+  sw t1, 0(t0)
+

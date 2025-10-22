@@ -25,9 +25,9 @@ architecture Beh of Execute is
 begin
   control <= decode_state.control;
   with control.alu_src select
-    alu_in_2 <= decode_state.rs2_value when Reg,
+    alu_in_2 <= decode_state.rs2_value       when Reg,
                 decode_state.upper_immediate when UpperImm,
-                decode_state.immediate when Imm;
+                decode_state.immediate       when Imm;
 
   alu_in_1 <= decode_state.rs1_value when control.auipc = '0' else std_logic_vector(decode_state.pc);
 
@@ -56,3 +56,4 @@ begin
     end if;
   end process ex_mem;
 end architecture Beh;
+

@@ -38,6 +38,7 @@ begin
     control.alu_src <= Reg      when "0110011", -- R type instructions
                        Reg      when "1100011", -- branch instructions
                        UpperImm when "0010111", -- AUIPC
+                       UpperImm when "0110111", -- LUi
                        Imm      when others;
 
   control.mem_write <= '1' when opcode = "0100011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
@@ -52,8 +53,8 @@ begin
 
   with opcode select
   control.branch_mode <= Branch when "1100011",
-                         Jal when "1101111",
-                         Jalr when "1100111",
+                         Jal    when "1101111",
+                         Jalr   when "1100111",
                          Non when others;
   with funct3 select
     control.branch_type <= Beq  when "000",
@@ -73,3 +74,4 @@ begin
                         Word when "10",
                         Non when others;
 end architecture Beh;
+

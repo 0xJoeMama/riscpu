@@ -139,6 +139,8 @@ package types is
     branch_taken => '0',
     next_pc => (others => '-')
   );
+
+  constant DIE_VECTOR : word_t := x"00100000";
 end package types;
 
 package body types is
@@ -179,3 +181,4 @@ package body types is
     return not is_non_zero(vec);
   end function;
 end package body types;
+

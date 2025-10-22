@@ -11,7 +11,8 @@ entity Memory is
     mem_state: out mem_state_t;
     -- interfacing with memory controller
     read_word: in word_t;
-    mem_iface: out MemDataInterface_t
+    mem_iface: out MemDataInterface_t;
+    kill_me: out std_logic
   );
 end entity Memory;
 
@@ -40,9 +41,9 @@ begin
 
   with control.branch_mode select
     branch_taken <= take_branch when Branch,
-                                      '1' when Jalr,
-                                      '1' when Jal,
-                                      '0' when others;
+                            '1' when Jalr,
+                            '1' when Jal,
+                            '0' when others;
 
   with control.branch_mode select
     next_pc <= ex_state.next_pc           when Branch,
@@ -55,11 +56,19 @@ begin
   begin
     if clear = '1' then
       mem_state <= ZERO_MEM_STATE;
+      kill_me <= '0';
     elsif rising_edge(clk) then
       mem_state.ex_state <= ex_state;
       mem_state.read_value <= read_word;
       mem_state.branch_taken <= branch_taken;
       mem_state.next_pc <= next_pc;
+
+      if ex_state.alu_res = DIE_VECTOR and control.mem_write = '1' then
+        kill_me <= '1';
+      else
+        kill_me <= '0';
+      end if;
     end if;
   end process mem_wb;
 end architecture Beh;
+

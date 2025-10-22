@@ -13,72 +13,55 @@ architecture Beh of RiscvDriver is
   signal clk: std_logic := '0';
   signal reset : std_logic := '0';
 
-  signal dump : std_logic := '0';
-  signal kill: std_logic;
-  signal inspection_pc : addr_t;
-
   signal debug_port: word_t;
+  signal kill_cpu : std_logic;
 begin
   mommy: entity work.Motherboard port map (
     clk => clk,
     reset => reset,
     debug_port => debug_port,
-    dump => dump,
-    kill_me => kill,
-    inspection_pc => inspection_pc
+    kill_me => kill_cpu
   );
 
   clk_stim: process is
+    variable continue: boolean := true;
     variable outline: line;
   begin
     reset <= '1';
     wait for 10 ns;
+
+    clk <= '1';
+    wait for 10 ns;
+    clk <= '0';
+    wait for 10 ns;
+
     reset <= '0';
     wait for 10 ns;
-    for i in 0 to 256 loop
+
+    -- run for at least 256 cycles to make sure all of ROM is mapped into RAM
+    for i in 0 to 255 loop
       clk <= '1';
       wait for 10 ns;
       clk <= '0';
       wait for 10 ns;
     end loop;
 
-    reset <= '1';
-    wait for 10 ns;
-    reset <= '0';
-    wait for 10 ns;
+    while continue loop
+      write(outline, "0x" & to_hstring(debug_port));
+      writeline(output, outline);
 
-    loop
-      if dump = '0' then
-        write(outline, "0x" & to_hstring(debug_port));
-        writeline(output, outline);
-
-        if debug_port = x"00000000" then
-          for i in 0 to 3 loop
-            clk <= '1';
-            wait for 10 ns;
-            clk <= '0';
-            wait for 10 ns;
-          end loop;
-
-          report "Begin RAM dump";
-
-          inspection_pc <= to_unsigned(0, inspection_pc'length);
-          dump <= '1';
-        end if;
+      if kill_cpu = '1' then
+        continue := false;
       else
-        inspection_pc <= inspection_pc + 1;
-        write(outline, integer'image(to_integer(inspection_pc)) & ": 0x" & to_hstring(debug_port));
-        writeline(output, outline);
-
-        if kill = '1' then
-          wait;
-        end if;
+        clk <= '1';
+        wait for 10 ns;
+        clk <= '0';
+        wait for 10 ns;
       end if;
-
-      clk <= '1';
-      wait for 10 ns;
-      clk <= '0';
-      wait for 10 ns;
     end loop;
-  end process;
+
+    report "Exiting system as die vector was written to";
+    wait;
+  end process clk_stim;
 end architecture Beh;
+

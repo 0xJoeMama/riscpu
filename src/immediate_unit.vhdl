@@ -44,3 +44,4 @@ begin
   immediate <= std_logic_vector(immediate_signed);
   upper_immediate <= std_logic_vector(shift_left(immediate_signed, 12));
 end architecture Beh;
+
