@@ -141,6 +141,8 @@ package types is
   );
 
   constant DIE_VECTOR : word_t := x"00100000";
+  -- TODO: initial address is 0 by default
+  constant INITIAL_ADDRESS: addr_t := x"000F0000";
 end package types;
 
 package body types is

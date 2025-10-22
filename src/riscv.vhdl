@@ -16,9 +16,6 @@ entity RiscV is
 end entity RiscV;
 
 architecture Beh of RiscV is
-  -- TODO: initial address is 0 by default
-  constant INITIAL_ADDRESS: addr_t := resize(x"0", WORD_SIZE);
-
   -- IF state
   signal if_out: if_state_t := ZERO_IF_STATE;
 

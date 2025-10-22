@@ -13,11 +13,12 @@ entity Motherboard is
 end entity Motherboard;
 
 architecture Beh of Motherboard is
-  constant rom_size : natural := 256;
-  signal mother_pc: unsigned(11 downto 0);
+  constant ROM_SIZE : natural := 256;
+  signal rom_idx: unsigned(11 downto 0);
   signal rom_word: word_t;
   signal cpu_off: std_logic;
 
+  -- The motherboard is just a state machine
   type BootStage is (MapRom, CPU);
  
   signal curr_stage: BootStage;
@@ -25,10 +26,11 @@ architecture Beh of Motherboard is
   signal cpu_pc: addr_t;
   signal pc: addr_t;
   signal mem_data: word_t;
+  signal mother_pc: addr_t;
 
   signal cpu_iface: MemDataInterface_t;
-  signal mem_iface: MemDataInterface_t;
   signal rom_iface: MemDataInterface_t;
+  signal mem_iface: MemDataInterface_t;
 begin
   rom_iface <= (
       mode => Word,
@@ -58,16 +60,16 @@ begin
     data_iface => mem_iface
   );
 
-  rom: entity work.Rom generic map (rom_size => rom_size) port map (
-    addr => mother_pc,
+  rom: entity work.Rom generic map (rom_size => ROM_SIZE) port map (
+    addr => rom_idx,
     outword => rom_word
   );
 
   cpu_off <= '1' when curr_stage /= CPU else '0';
 
   with curr_stage select
-    pc <= cpu_pc                              when CPU,
-          resize(mother_pc & "00", pc'length) when MapRom;
+    pc <= cpu_pc    when CPU,
+          mother_pc when MapRom;
 
   with curr_stage select
     mem_iface <= cpu_iface  when CPU,
@@ -78,16 +80,19 @@ begin
   begin
     if reset = '1' then
       curr_stage <= MapRom;
-      mother_pc <= to_unsigned(0, mother_pc'length);
+      rom_idx <= (others => '0');
+      mother_pc <= INITIAL_ADDRESS;
     elsif rising_edge(clk) then
       case curr_stage is
       when MapRom => 
-        if mother_pc = rom_size - 1 then
+        if rom_idx = ROM_SIZE - 1 then
           curr_stage <= CPU;
+          rom_idx <= rom_idx;
           mother_pc <= mother_pc;
         else
           curr_stage <= MapRom;
-          mother_pc <= mother_pc + 1;
+          rom_idx <= rom_idx + 1;
+          mother_pc <= mother_pc + 4;
         end if;
       when CPU => null;
       end case;
