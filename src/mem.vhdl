@@ -54,8 +54,8 @@ begin
   sign_extend <= data_iface.sign_extend;
 
   -- we trash the bottom 2 bits
-  aligned_data_addr  <= shift_right(data_addr and normalization_mask, 2);
-  aligned_insn_addr  <= shift_right(insn_addr and normalization_mask, 2);
+  aligned_data_addr <= shift_right(data_addr and normalization_mask, 2);
+  aligned_insn_addr <= shift_right(insn_addr and normalization_mask, 2);
 
   read_wordbyte_idx <= unsigned(data_addr(1 downto 0));
   read_wordhalf_idx <= unsigned(data_addr(1 downto 1));
@@ -94,7 +94,7 @@ begin
   read_byte <= full_outword(to_integer(read_wordbyte_idx) * 8 + 7 downto to_integer(read_wordbyte_idx) * 8);
   read_half <= full_outword(to_integer(read_wordhalf_idx) * 16 + 15 downto to_integer(read_wordhalf_idx) * 16);
 
-  outwords(MemMode_t'pos(Non)) <= (others => '0');
+  outwords(MemMode_t'pos(Non)) <= (others => '-');
   outwords(MemMode_t'pos(Byte)) <= std_logic_vector(resize(unsigned(read_byte), 32)) when sign_extend = '0' else
                                    std_logic_vector(resize(signed(read_byte), 32));
   outwords(MemMode_t'pos(Half)) <= std_logic_vector(resize(unsigned(read_half), 32)) when sign_extend = '0' else

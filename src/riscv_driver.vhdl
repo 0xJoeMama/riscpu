@@ -28,22 +28,22 @@ begin
     variable outline: line;
   begin
     reset <= '1';
-    wait for 10 ns;
+    wait for 20 ns;
 
     clk <= '1';
-    wait for 10 ns;
+    wait for 20 ns;
     clk <= '0';
-    wait for 10 ns;
+    wait for 20 ns;
 
     reset <= '0';
-    wait for 10 ns;
+    wait for 20 ns;
 
     -- run for at least 256 cycles to make sure all of ROM is mapped into RAM
     for i in 0 to 255 loop
       clk <= '1';
-      wait for 10 ns;
+      wait for 20 ns;
       clk <= '0';
-      wait for 10 ns;
+      wait for 20 ns;
     end loop;
 
     while continue loop
@@ -54,9 +54,9 @@ begin
         continue := false;
       else
         clk <= '1';
-        wait for 10 ns;
+        wait for 20 ns;
         clk <= '0';
-        wait for 10 ns;
+        wait for 20 ns;
       end if;
     end loop;
 

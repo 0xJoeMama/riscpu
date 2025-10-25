@@ -11,6 +11,7 @@ entity RiscV is
     insn : in word_t;
     pc : inout addr_t;
     mem_iface : out MemDataInterface_t;
+    mem_word: in word_t;
     kill_me : out std_logic
   );
 end entity RiscV;
@@ -27,7 +28,6 @@ architecture Beh of RiscV is
   signal decode_state : decode_state_t := ZERO_DECODE_STATE;
 
   -- MEM state
-  signal mem_out : word_t := (others => '0');
   signal mem_state: mem_state_t := ZERO_MEM_STATE;
   signal ex_state: execute_state_t := ZERO_EX_STATE;
 
@@ -67,7 +67,7 @@ begin
     clear => reset,
     ex_state => ex_state,
     mem_state => mem_state,
-    read_word => mem_out,
+    read_word => mem_word,
     mem_iface => mem_iface,
     kill_me => kill_me
   );

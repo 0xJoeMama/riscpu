@@ -22,7 +22,7 @@ architecture Beh of RegisterFile is
 begin
   process (clk, write_enable) is
   begin
-    if rising_edge(clk) and write_enable = '1' then
+    if falling_edge(clk) and write_enable = '1' then
       if rd /= zero then
         regs(rd) <= inword;
       end if;

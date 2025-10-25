@@ -47,6 +47,7 @@ begin
     pc => cpu_pc,
     insn => insn,
     mem_iface => cpu_iface,
+    mem_word => mem_data,
     kill_me => kill_me
   );
 
