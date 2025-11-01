@@ -51,6 +51,8 @@ begin
       decode_state.control <= control;
       decode_state.immediate <= immediate;
       decode_state.upper_immediate <= upper_immediate;
+      decode_state.rs1 <= rs1;
+      decode_state.rs2 <= rs2;
       decode_state.rs1_value <= rs1_value;
       decode_state.rs2_value <= rs2_value;
       decode_state.rd <= rd;

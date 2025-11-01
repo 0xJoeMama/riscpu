@@ -25,7 +25,7 @@ architecture Beh of RiscV is
   signal rs2: register_t := zero;
   signal reg1_value: word_t := (others => '0');
   signal reg2_value: word_t := (others => '0');
-  signal decode_state : decode_state_t := ZERO_DECODE_STATE;
+  signal decode_state: decode_state_t := ZERO_DECODE_STATE;
 
   -- MEM state
   signal mem_state: mem_state_t := ZERO_MEM_STATE;
@@ -38,7 +38,7 @@ architecture Beh of RiscV is
 begin
   ifetch: entity work.InstructionFetch port map(
     clk => clk,
-    flush => reset,
+    reset => reset,
     pc => pc,
     ininsn => insn,
     insn => if_out

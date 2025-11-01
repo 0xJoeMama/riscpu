@@ -92,6 +92,8 @@ package types is
     control: control_t;
     immediate: word_t;
     upper_immediate: word_t;
+    rs1: register_t;
+    rs2: register_t;
     rs1_value: word_t;
     rs2_value: word_t;
     rd: register_t;
@@ -102,6 +104,8 @@ package types is
     control => ZEROED_CONTROL,
     immediate => (others => '0'),
     upper_immediate => (others => '0'),
+    rs1 => zero,
+    rs2 => zero,
     rs1_value => (others => '0'),
     rs2_value => (others => '0'),
     rd => zero
@@ -140,9 +144,12 @@ package types is
     next_pc => (others => '-')
   );
 
+  type Stage is (IFe, Id, Ex, Mem, Wb);
+  type HazardInfo is (Non, Stall, Flush);
+
   constant DIE_VECTOR : word_t := x"00100000";
-  -- TODO: initial address is 0 by default
   constant INITIAL_ADDRESS: addr_t := x"000F0000";
+  constant NOP : word_t := x"00000013";
 end package types;
 
 package body types is

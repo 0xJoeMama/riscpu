@@ -60,7 +60,7 @@ begin
   read_wordbyte_idx <= unsigned(data_addr(1 downto 0));
   read_wordhalf_idx <= unsigned(data_addr(1 downto 1));
 
-  write: process (clk, data_addr, old_write_cell_contents, mode, data_iface.inword, data_iface.write_enable) is
+  write: process (clk, data_addr, old_write_cell_contents, mode, data_iface) is
     variable addr: natural;
     variable to_write : std_logic_vector(31 downto 0);
     variable wordbyte_idx : natural;

@@ -34,7 +34,7 @@ architecture Beh of Rom is
     end loop;
 
     while i < rom_size loop
-      rom_var(i) := (others => '0');
+      rom_var(i) := NOP;
       i := i + 1;
     end loop;
 

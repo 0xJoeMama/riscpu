@@ -95,7 +95,7 @@ begin
           rom_idx <= rom_idx + 1;
           mother_pc <= mother_pc + 4;
         end if;
-      when CPU => null;
+      when CPU => 
       end case;
     end if;
   end process fsm;

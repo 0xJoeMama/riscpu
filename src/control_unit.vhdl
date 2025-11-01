@@ -39,7 +39,7 @@ begin
                        Reg      when "1100011", -- branch instructions
                        UpperImm when "0010111", -- AUIPC
                        UpperImm when "0110111", -- LUi
-                       Imm      when others;
+                       Imm      when others;    -- includes sw and lw
 
   control.mem_write <= '1' when opcode = "0100011" else '0'; -- only write to memory when the instruction is a sw/sh/sb, otherwise read
   with opcode select
