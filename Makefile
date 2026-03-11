@@ -1,10 +1,10 @@
 GHDL=ghdl
 GHDLFLAGS=--std=08
-AS=riscv64-linux-gnu-as
+AS=riscv64-elf-as
 ASFLAGS=-march=rv32i
-LD=riscv64-linux-gnu-ld
+LD=riscv64-elf-ld
 LDFLAGS=-b elf32-littleriscv
-OBJCOPY=riscv64-linux-gnu-objcopy
+OBJCOPY=riscv64-elf-objcopy
 
 ENTITIES=riscvdriver
 PROGRAM=simple.elf
