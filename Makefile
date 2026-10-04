@@ -6,32 +6,14 @@ LD=riscv64-elf-ld
 LDFLAGS=-b elf32-littleriscv
 OBJCOPY=riscv64-elf-objcopy
 
-ENTITIES=riscvdriver
 PROGRAM=simple.elf
+SRC=src/bitsize.sv src/constants.sv src/riscv.sv
 
 .PHONY: all
-all: $(ENTITIES) | insns.bin
+all: mod.v | insns.bin
 
-.PHONY: run
-run: all
-	$(GHDL) -r  $(GHDLFLAGS) $(ENTITIES) --ieee-asserts=disable-at-0
-
-.PHONY: mem_test
-mem_test: all
-	$(GHDL) -r  $(GHDLFLAGS) memtb --ieee-asserts=disable-at-0 --stats
-
-riscvdriver: types.anal immediate_unit.anal \
-	alu.anal branch_controller.anal control_unit.anal mem.anal \
-	register_file.anal stages/fetch.anal stages/decode.anal \
-	stages/execute.anal stages/memory.anal stages/write_back.anal \
-	riscv.anal rom.anal motherboard.anal riscv_driver.anal
-	$(GHDL) -e $(GHDLFLAGS) $@
-
-vpath %.vhdl ./src
-
-.PHONY: %.anal
-%.anal: %.vhdl
-	$(GHDL) -a $(GHDLFLAGS) $^
+mod.v: $(SRC)
+	sv2v $(SRC) > mod.v
 
 vpath %.s ./programs/
 
@@ -45,4 +27,4 @@ insns.bin: $(PROGRAM)
 	$(OBJCOPY) -O binary $< $@
 
 clean:
-	rm -rf *.o *.elf *.bin
+	rm -rf  *.elf *.bin

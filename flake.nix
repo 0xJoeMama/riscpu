@@ -13,8 +13,10 @@
   in {
     devShells.${system}.default = pkgs.mkShell {
       packages = with pkgs; [
-        ghdl
         coreboot-toolchain.riscv
+        yosys
+        netlistsvg
+        haskellPackages.sv2v
         gnumake
       ];
     };

@@ -2,5 +2,6 @@
 *.elf
 *.bin
 *.o
-vivado_project/
+*.json
+*.v
 

@@ -1,0 +1,20 @@
+# 1. Read SystemVerilog input
+read_verilog -sv mod.v
+
+# 2. Extract Coarse-Grain RTL (Preserves buses and word-level logic)
+prep -top riscv
+
+# 3. First Schematic Dump (Word-Level RTL)
+# A 32-bit AND operation will export as a single $and cell with 32-bit wide inputs
+write_json rtl_schematic.json
+
+# 4. Full Synthesis
+# This pass intentionally bit-blasts the buses to map to physical hardware
+synth -top riscv
+
+# 5. Map to standard combinational logic gates
+abc -g AND,OR,XOR
+opt_clean
+
+# 6. Second Schematic Dump (Gate Level)
+write_json gate_schematic.json
