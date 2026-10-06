@@ -3,5 +3,6 @@
 *.bin
 *.o
 *.json
+*.svg
 *.v
 
