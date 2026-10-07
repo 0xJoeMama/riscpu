@@ -6,7 +6,7 @@ module Memory
 (
   input logic clk,
   input logic [ADDR_BITS - 1:0] addr,
-  MemMode mode,
+  input MemMode mode,
   inout logic [WORD_SIZE - 1 : 0] word
 );
   typedef enum logic {
@@ -18,12 +18,14 @@ module Memory
   MemWord mem [0:(1 << ADDR_BITS) - 1];
 
   always_ff @(posedge clk) begin
-    case (mode)
-      Write: begin
-        mem[addr] <= word;
-      end
-      Read : word <= mem[addr];
-      default: word <= '0;
-    endcase
+    if (mode == Write) begin
+      mem[addr] <= word;
+    end
+  end
+
+  always_ff @(posedge clk) begin
+    if (mode == Read) begin
+      word <= mem[addr];
+    end
   end
 endmodule

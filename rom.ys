@@ -1,0 +1,3 @@
+read_verilog -sv mod.v
+prep -top Rom
+write_json rom.json
